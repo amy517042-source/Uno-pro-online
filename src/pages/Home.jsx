@@ -1,10 +1,37 @@
 import { useState } from "react";
 import Button from "../components/Button";
 import Card from "../components/Card";
+import { auth } from "../firebase/firebase";
+import { createRoom } from "../services/roomService";
 
 export default function Home() {
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
+
+  async function handleCreateRoom() {
+    if (!playerName.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert("User not logged in.");
+      return;
+    }
+
+    try {
+      const newRoomCode = await createRoom(user.uid);
+
+      alert(`🎉 Room Created!\n\nRoom Code: ${newRoomCode}`);
+
+      setRoomCode(newRoomCode);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to create room.");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-green-700 flex items-center justify-center p-6">
@@ -26,7 +53,10 @@ export default function Home() {
           className="w-full border rounded-lg p-3 mb-4"
         />
 
-        <Button className="w-full mb-4">
+        <Button
+          className="w-full mb-4"
+          onClick={handleCreateRoom}
+        >
           Create Room
         </Button>
 
