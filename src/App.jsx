@@ -1,5 +1,5 @@
-import Home from "./pages/Home";
+import Game from "./pages/Game";
 
 export default function App() {
-  return <Home />;
+  return <Game />;
 }
