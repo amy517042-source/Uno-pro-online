@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import Game from "./pages/Game";
+import Home from "./pages/Home";
 import { loginAnonymous } from "./services/auth";
 
 export default function App() {
@@ -16,5 +16,5 @@ export default function App() {
     login();
   }, []);
 
-  return <Game />;
+  return <Home />;
 }
