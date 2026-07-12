@@ -29,7 +29,8 @@ export default function Home() {
       setRoomCode(newRoomCode);
     } catch (error) {
       console.error(error);
-      alert("Failed to create room.");
+      alert(error.message);
+console.error(error);
     }
   }
 
