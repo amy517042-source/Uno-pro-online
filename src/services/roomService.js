@@ -2,6 +2,8 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
+  arrayUnion,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -18,29 +20,30 @@ function generateRoomCode() {
 }
 
 export async function createRoom(hostId) {
-  try {
-    const roomCode = generateRoomCode();
+  const roomCode = generateRoomCode();
 
-    console.log("Creating room:", roomCode);
+  await setDoc(doc(db, "rooms", roomCode), {
+    roomCode,
+    hostId,
+    players: [hostId],
+    status: "waiting",
+    createdAt: Date.now(),
+  });
 
-    await setDoc(doc(db, "rooms", roomCode), {
-      roomCode,
-      hostId,
-      players: [hostId],
-      status: "waiting",
-      createdAt: Date.now(),
-    });
-
-    console.log("Room created successfully");
-
-    return roomCode;
-  } catch (error) {
-    console.error("Firestore Error:", error);
-    throw error;
-  }
+  return roomCode;
 }
 
-export async function roomExists(roomCode) {
-  const snapshot = await getDoc(doc(db, "rooms", roomCode));
-  return snapshot.exists();
+export async function joinRoom(roomCode, playerId) {
+  const roomRef = doc(db, "rooms", roomCode);
+  const snapshot = await getDoc(roomRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Room not found.");
+  }
+
+  await updateDoc(roomRef, {
+    players: arrayUnion(playerId),
+  });
+
+  return snapshot.data();
 }
