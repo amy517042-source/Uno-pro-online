@@ -19,21 +19,30 @@ function generateRoomCode() {
   return code;
 }
 
-export async function createRoom(hostId) {
+export async function createRoom(hostId, playerName, maxPlayers) {
   const roomCode = generateRoomCode();
 
   await setDoc(doc(db, "rooms", roomCode), {
     roomCode,
     hostId,
-    players: [hostId],
+    hostName: playerName,
+    maxPlayers,
     status: "waiting",
     createdAt: Date.now(),
+    players: [
+      {
+        uid: hostId,
+        name: playerName,
+        joinedAt: Date.now(),
+        isHost: true,
+      },
+    ],
   });
 
   return roomCode;
 }
 
-export async function joinRoom(roomCode, playerId) {
+export async function joinRoom(roomCode, playerId, playerName) {
   const roomRef = doc(db, "rooms", roomCode);
   const snapshot = await getDoc(roomRef);
 
@@ -41,9 +50,20 @@ export async function joinRoom(roomCode, playerId) {
     throw new Error("Room not found.");
   }
 
+  const room = snapshot.data();
+
+  if (room.players.length >= room.maxPlayers) {
+    throw new Error("Room is full.");
+  }
+
   await updateDoc(roomRef, {
-    players: arrayUnion(playerId),
+    players: arrayUnion({
+      uid: playerId,
+      name: playerName,
+      joinedAt: Date.now(),
+      isHost: false,
+    }),
   });
 
-  return snapshot.data();
+  return room;
 }
