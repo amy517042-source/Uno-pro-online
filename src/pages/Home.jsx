@@ -7,6 +7,7 @@ import { createRoom, joinRoom } from "../services/roomService";
 export default function Home() {
   const [playerName, setPlayerName] = useState("");
   const [roomCode, setRoomCode] = useState("");
+  const [maxPlayers, setMaxPlayers] = useState(4);
 
   async function handleCreateRoom() {
     if (!playerName.trim()) {
@@ -22,11 +23,15 @@ export default function Home() {
     }
 
     try {
-      const newRoomCode = await createRoom(user.uid);
-
-      alert(`🎉 Room Created!\n\nRoom Code: ${newRoomCode}`);
+      const newRoomCode = await createRoom(
+        user.uid,
+        playerName,
+        Number(maxPlayers)
+      );
 
       setRoomCode(newRoomCode);
+
+      alert(`🎉 Room Created!\n\nRoom Code: ${newRoomCode}`);
     } catch (error) {
       console.error(error);
       alert(error.message);
@@ -52,7 +57,7 @@ export default function Home() {
     }
 
     try {
-      await joinRoom(roomCode, user.uid);
+      await joinRoom(roomCode, user.uid, playerName);
 
       alert(`🎉 Joined Room: ${roomCode}`);
     } catch (error) {
@@ -79,6 +84,22 @@ export default function Home() {
           onChange={(e) => setPlayerName(e.target.value)}
           className="w-full border rounded-lg p-3 mb-4"
         />
+
+        <select
+          value={maxPlayers}
+          onChange={(e) => setMaxPlayers(e.target.value)}
+          className="w-full border rounded-lg p-3 mb-4"
+        >
+          <option value="2">2 Players</option>
+          <option value="3">3 Players</option>
+          <option value="4">4 Players</option>
+          <option value="5">5 Players</option>
+          <option value="6">6 Players</option>
+          <option value="7">7 Players</option>
+          <option value="8">8 Players</option>
+          <option value="9">9 Players</option>
+          <option value="10">10 Players</option>
+        </select>
 
         <Button
           className="w-full mb-4"
