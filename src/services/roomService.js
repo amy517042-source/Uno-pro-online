@@ -52,6 +52,13 @@ export async function joinRoom(roomCode, playerId, playerName) {
   }
 
   const room = snapshot.data();
+const alreadyJoined = room.players.some(
+  (player) => player.uid === playerId
+);
+
+if (alreadyJoined) {
+  throw new Error("You have already joined this room.");
+}
 
   if (room.players.length >= room.maxPlayers) {
     throw new Error("Room is full.");
