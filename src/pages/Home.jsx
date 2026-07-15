@@ -19,8 +19,12 @@ export default function Home({
       return;
     }
 
-    const user = auth.currentUser;
+    let user = auth.currentUser;
 
+if (!user) {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  user = auth.currentUser;
+}
     if (!user) {
       alert("User not logged in.");
       return;
@@ -53,7 +57,12 @@ export default function Home({
       return;
     }
 
-    const user = auth.currentUser;
+    let user = auth.currentUser;
+
+if (!user) {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  user = auth.currentUser;
+}
 
     if (!user) {
       alert("User not logged in.");
