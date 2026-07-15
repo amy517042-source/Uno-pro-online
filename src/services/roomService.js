@@ -68,3 +68,12 @@ export async function joinRoom(roomCode, playerId, playerName) {
 
   return room;
 }
+export function listenToRoom(roomCode, callback) {
+  const roomRef = doc(db, "rooms", roomCode);
+
+  return onSnapshot(roomRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.data());
+    }
+  });
+}
