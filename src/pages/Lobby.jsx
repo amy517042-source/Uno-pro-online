@@ -4,15 +4,23 @@ import Button from "../components/Button";
 import { auth } from "../firebase/firebase";
 import { listenToRoom, startGame } from "../services/roomService";
 
-export default function Lobby({ roomCode, playerName }) {
+export default function Lobby({
+  roomCode,
+  playerName,
+  setScreen,
+}) {
   const [room, setRoom] = useState(null);
 
   useEffect(() => {
     if (!roomCode) return;
 
     const unsubscribe = listenToRoom(roomCode, (roomData) => {
-      setRoom(roomData);
-    });
+  setRoom(roomData);
+
+  if (roomData.status === "playing") {
+    setScreen("game");
+  }
+});
 
     return () => unsubscribe();
   }, [roomCode]);
