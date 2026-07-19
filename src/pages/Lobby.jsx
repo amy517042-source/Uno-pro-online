@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import { auth } from "../firebase/firebase";
-import { listenToRoom } from "../services/roomService";
+import { listenToRoom, startGame } from "../services/roomService";
 
 export default function Lobby({ roomCode, playerName }) {
   const [room, setRoom] = useState(null);
@@ -68,12 +68,18 @@ export default function Lobby({ roomCode, playerName }) {
 
         {isHost ? (
           <Button
-            className="w-full mt-6"
-            disabled={room.players.length < 2}
-            onClick={() => alert("Start Game coming in next step")}
-          >
-            Start Game
-          </Button>
+  className="w-full mt-6"
+  disabled={room.players.length < 2}
+  onClick={async () => {
+    try {
+      await startGame(room.roomCode);
+    } catch (error) {
+      alert(error.message);
+    }
+  }}
+>
+  Start Game
+</Button>
         ) : (
           <div className="text-center mt-6 text-gray-600">
             Waiting for host to start...
