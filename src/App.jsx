@@ -35,9 +35,10 @@ export default function App() {
   if (screen === "lobby") {
     return (
       <Lobby
-        roomCode={roomCode}
-        playerName={playerName}
-      />
+  roomCode={roomCode}
+  playerName={playerName}
+  setScreen={setScreen}
+/>
     );
   }
 
