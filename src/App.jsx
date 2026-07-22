@@ -42,5 +42,10 @@ export default function App() {
     );
   }
 
-  return <Game />;
+  return (
+  <Game
+    roomCode={roomCode}
+    playerName={playerName}
+  />
+);
 }
