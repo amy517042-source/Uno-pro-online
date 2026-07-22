@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { listenToRoom } from "../services/roomService";
 
 import PlayerHand from "../components/PlayerHand";
 import OpponentHand from "../components/OpponentHand";
@@ -6,14 +7,40 @@ import CenterPile from "../components/CenterPile";
 
 import { createDeck } from "../game/deck";
 
-export default function Game() {
+export default function Game({
+  roomCode,
+  playerName,
+}) {
+
+  const [room, setRoom] = useState(null);
+
+  useEffect(() => {
+    if (!roomCode) return;
+
+    const unsubscribe = listenToRoom(roomCode, (roomData) => {
+      setRoom(roomData);
+    });
+
+    return () => unsubscribe();
+  }, [roomCode]);
+
   const deck = createDeck();
 
   const [playerCards] = useState(deck.slice(0, 7));
 
   const topCard = deck[20];
 
-  return (
+  if (!room) {
+    return (
+      <div className="min-h-screen bg-green-800 flex items-center justify-center">
+        <h2 className="text-white text-2xl">
+          Loading Game...
+        </h2>
+      </div>
+    );
+  }
+
+   return (
     <div className="min-h-screen bg-green-800 relative overflow-hidden">
 
       {/* Table */}
