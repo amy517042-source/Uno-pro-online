@@ -29,6 +29,9 @@ export default function Game({
   const [playerCards] = useState(deck.slice(0, 7));
 
   const topCard = deck[20];
+const opponents = room.players.filter(
+  (player) => player.uid !== room.hostId
+);
 
   if (!room) {
     return (
