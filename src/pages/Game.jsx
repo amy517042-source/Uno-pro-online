@@ -69,20 +69,24 @@ const opponents = room.players.filter(
   </div>
 )}
       {/* Left Opponent */}
-      <div className="absolute left-5 top-1/2 -translate-y-1/2">
-        <OpponentHand
-          playerName="Player 3"
-          cardCount={7}
-        />
-      </div>
+{opponents[1] && (
+  <div className="absolute left-5 top-1/2 -translate-y-1/2">
+    <OpponentHand
+      playerName={opponents[1].name}
+      cardCount={7}
+    />
+  </div>
+)}
 
       {/* Right Opponent */}
-      <div className="absolute right-5 top-1/2 -translate-y-1/2">
-        <OpponentHand
-          playerName="Player 4"
-          cardCount={7}
-        />
-      </div>
+{opponents[2] && (
+  <div className="absolute right-5 top-1/2 -translate-y-1/2">
+    <OpponentHand
+      playerName={opponents[2].name}
+      cardCount={7}
+    />
+  </div>
+)}
 
       {/* Your Hand */}
 
