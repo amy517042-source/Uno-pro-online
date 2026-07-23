@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { auth } from "../firebase/firebase";
 import { listenToRoom } from "../services/roomService";
 
 import PlayerHand from "../components/PlayerHand";
@@ -24,11 +25,16 @@ export default function Game({
     return () => unsubscribe();
   }, [roomCode]);
 
-  const deck = createDeck();
+  const currentUser = auth.currentUser;
 
-  const [playerCards] = useState(deck.slice(0, 7));
+const playerCards =
+  room.hands?.[currentUser?.uid] || [];
 
-  const topCard = deck[20];
+const topCard =
+  room.discardPile?.[room.discardPile.length - 1];
+
+const deckCount = room.deck?.length || 0;
+
 const opponents = room.players.filter(
   (player) => player.uid !== room.hostId
 );
