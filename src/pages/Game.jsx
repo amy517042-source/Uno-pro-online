@@ -56,12 +56,12 @@ const opponents = room.players.filter(
       <div className="absolute inset-0 flex items-center justify-center">
 
         <CenterPile
-          topCard={topCard}
-          currentColor={topCard.color}
-          deckCount={deck.length}
-          canDraw={true}
-          onDraw={() => alert("Draw card")}
-        />
+  topCard={topCard}
+  currentColor={topCard?.color || ""}
+  deckCount={deckCount}
+  canDraw={true}
+  onDraw={() => alert("Draw card")}
+/>
 
       </div>
 
