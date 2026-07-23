@@ -91,7 +91,6 @@ export function listenToRoom(roomCode, callback) {
 }
 
 export async function startGame(roomCode) {
-  export async function startGame(roomCode) {
   const roomRef = doc(db, "rooms", roomCode);
 
   const snapshot = await getDoc(roomRef);
