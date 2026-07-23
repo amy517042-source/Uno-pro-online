@@ -8,6 +8,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
+import { createDeck } from "../game/deck";
 import { db } from "../firebase/firebase";
 
 function generateRoomCode() {
@@ -90,10 +91,34 @@ export function listenToRoom(roomCode, callback) {
 }
 
 export async function startGame(roomCode) {
+  export async function startGame(roomCode) {
   const roomRef = doc(db, "rooms", roomCode);
+
+  const snapshot = await getDoc(roomRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Room not found.");
+  }
+
+  const room = snapshot.data();
+
+  const deck = createDeck();
+
+  const hands = {};
+
+  room.players.forEach((player) => {
+    hands[player.uid] = deck.splice(0, 7);
+  });
+
+  const discardPile = [deck.shift()];
 
   await updateDoc(roomRef, {
     status: "playing",
+    deck,
+    hands,
+    discardPile,
+    currentPlayer: room.players[0].uid,
+    direction: 1,
     gameStartedAt: serverTimestamp(),
   });
 }
