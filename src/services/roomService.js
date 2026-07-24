@@ -8,8 +8,14 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-import { createDeck } from "../game/deck";
 import { db } from "../firebase/firebase";
+import { createDeck } from "../game/deck";
+import {
+  isValidPlay,
+  getNextTurn,
+  reverseDirection,
+  getDrawAmount,
+} from "../game/rules";
 
 function generateRoomCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -32,6 +38,7 @@ export async function createRoom(hostId, playerName, maxPlayers) {
     maxPlayers,
     status: "waiting",
     createdAt: Date.now(),
+
     players: [
       {
         uid: hostId,
@@ -40,6 +47,13 @@ export async function createRoom(hostId, playerName, maxPlayers) {
         isHost: true,
       },
     ],
+
+    deck: [],
+    discardPile: [],
+    hands: {},
+    currentPlayer: null,
+    direction: 1,
+    winner: null,
   });
 
   return roomCode;
@@ -47,6 +61,7 @@ export async function createRoom(hostId, playerName, maxPlayers) {
 
 export async function joinRoom(roomCode, playerId, playerName) {
   const roomRef = doc(db, "rooms", roomCode);
+
   const snapshot = await getDoc(roomRef);
 
   if (!snapshot.exists()) {
@@ -55,7 +70,6 @@ export async function joinRoom(roomCode, playerId, playerName) {
 
   const room = snapshot.data();
 
-  // Prevent duplicate joins
   const alreadyJoined = room.players.some(
     (player) => player.uid === playerId
   );
@@ -101,6 +115,10 @@ export async function startGame(roomCode) {
 
   const room = snapshot.data();
 
+  if (room.players.length < 2) {
+    throw new Error("Need at least 2 players.");
+  }
+
   const deck = createDeck();
 
   const hands = {};
@@ -109,15 +127,254 @@ export async function startGame(roomCode) {
     hands[player.uid] = deck.splice(0, 7);
   });
 
-  const discardPile = [deck.shift()];
+  let firstCard = deck.shift();
+
+  while (firstCard.color === "Black") {
+    deck.push(firstCard);
+    firstCard = deck.shift();
+  }
 
   await updateDoc(roomRef, {
     status: "playing",
     deck,
     hands,
-    discardPile,
+    discardPile: [firstCard],
     currentPlayer: room.players[0].uid,
     direction: 1,
+    winner: null,
     gameStartedAt: serverTimestamp(),
   });
+}
+function getPlayerIndex(players, uid) {
+  return players.findIndex((player) => player.uid === uid);
+}
+
+function getNextPlayer(room) {
+  const currentIndex = getPlayerIndex(
+    room.players,
+    room.currentPlayer
+  );
+
+  const nextIndex = getNextTurn(
+    currentIndex,
+    room.direction,
+    room.players.length
+  );
+
+  return room.players[nextIndex].uid;
+}
+
+export async function drawCard(roomCode, playerUid) {
+  const roomRef = doc(db, "rooms", roomCode);
+
+  const snapshot = await getDoc(roomRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Room not found.");
+  }
+
+  const room = snapshot.data();
+
+  if (room.currentPlayer !== playerUid) {
+    throw new Error("Not your turn.");
+  }
+
+  if (room.deck.length === 0) {
+    throw new Error("Deck is empty.");
+  }
+
+  const deck = [...room.deck];
+
+  const hands = {
+    ...room.hands,
+  };
+
+  const drawnCard = deck.shift();
+
+  hands[playerUid] = [
+    ...hands[playerUid],
+    drawnCard,
+  ];
+
+  await updateDoc(roomRef, {
+    deck,
+    hands,
+    currentPlayer: getNextPlayer(room),
+  });
+}
+
+export async function playCard(
+  roomCode,
+  playerUid,
+  card,
+  chosenColor = null
+) {
+  const roomRef = doc(db, "rooms", roomCode);
+
+  const snapshot = await getDoc(roomRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Room not found.");
+  }
+
+  const room = snapshot.data();
+
+  if (room.currentPlayer !== playerUid) {
+    throw new Error("Not your turn.");
+  }
+
+  const topCard =
+    room.discardPile[
+      room.discardPile.length - 1
+    ];
+
+  const currentColor =
+    topCard.color === "Black"
+      ? room.currentColor
+      : topCard.color;
+
+  if (
+    !isValidPlay(
+      card,
+      topCard,
+      currentColor
+    )
+  ) {
+    throw new Error("Invalid move.");
+  }
+
+  const hands = {
+    ...room.hands,
+  };
+
+  hands[playerUid] =
+    hands[playerUid].filter(
+      (c) => c.id !== card.id
+    );
+
+  const discardPile = [
+    ...room.discardPile,
+    card,
+  ];
+
+  let direction = room.direction;
+
+  let nextPlayer = getNextPlayer(room);
+
+  let deck = [...room.deck];
+  // Reverse
+  if (card.value === "Reverse") {
+    direction = reverseDirection(direction);
+
+    const currentIndex = getPlayerIndex(
+      room.players,
+      playerUid
+    );
+
+    const nextIndex = getNextTurn(
+      currentIndex,
+      direction,
+      room.players.length
+    );
+
+    nextPlayer = room.players[nextIndex].uid;
+  }
+
+  // Skip
+  if (card.value === "Skip") {
+    const currentIndex = getPlayerIndex(
+      room.players,
+      playerUid
+    );
+
+    const skipIndex = getNextTurn(
+      getNextTurn(
+        currentIndex,
+        direction,
+        room.players.length
+      ),
+      direction,
+      room.players.length
+    );
+
+    nextPlayer = room.players[skipIndex].uid;
+  }
+
+  // Draw Two
+  if (card.value === "Draw2") {
+    const amount = getDrawAmount(card);
+
+    const victim = nextPlayer;
+
+    for (let i = 0; i < amount; i++) {
+      if (deck.length === 0) break;
+
+      hands[victim].push(deck.shift());
+    }
+
+    const victimIndex = getPlayerIndex(
+      room.players,
+      victim
+    );
+
+    const afterVictim = getNextTurn(
+      victimIndex,
+      direction,
+      room.players.length
+    );
+
+    nextPlayer = room.players[afterVictim].uid;
+  }
+
+  // Wild
+  let currentColor =
+    chosenColor || card.color;
+
+  // Wild Draw Four
+  if (card.value === "WildDraw4") {
+    currentColor = chosenColor;
+
+    const victim = nextPlayer;
+
+    for (let i = 0; i < 4; i++) {
+      if (deck.length === 0) break;
+
+      hands[victim].push(deck.shift());
+    }
+
+    const victimIndex = getPlayerIndex(
+      room.players,
+      victim
+    );
+
+    const afterVictim = getNextTurn(
+      victimIndex,
+      direction,
+      room.players.length
+    );
+
+    nextPlayer = room.players[afterVictim].uid;
+  }
+
+  // Winner
+  let winner = null;
+
+  if (hands[playerUid].length === 0) {
+    winner = playerUid;
+  }
+  await updateDoc(roomRef, {
+    hands,
+    deck,
+    discardPile,
+    currentPlayer: winner ? null : nextPlayer,
+    direction,
+    currentColor,
+    winner,
+    status: winner ? "finished" : "playing",
+  });
+
+  return {
+    winner,
+    nextPlayer,
+  };
 }
