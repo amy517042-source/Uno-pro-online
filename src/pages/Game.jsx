@@ -6,7 +6,6 @@ import PlayerHand from "../components/PlayerHand";
 import OpponentHand from "../components/OpponentHand";
 import CenterPile from "../components/CenterPile";
 
-import { createDeck } from "../game/deck";
 
 export default function Game({
   roomCode,
@@ -27,6 +26,16 @@ export default function Game({
 
   const currentUser = auth.currentUser;
 
+
+  if (!room) {
+    return (
+      <div className="min-h-screen bg-green-800 flex items-center justify-center">
+        <h2 className="text-white text-2xl">
+          Loading Game...
+        </h2>
+      </div>
+    );
+  }
 const playerCards =
   room.hands?.[currentUser?.uid] || [];
 
@@ -39,15 +48,6 @@ const opponents = room.players.filter(
   (player) => player.uid !== room.hostId
 );
 
-  if (!room) {
-    return (
-      <div className="min-h-screen bg-green-800 flex items-center justify-center">
-        <h2 className="text-white text-2xl">
-          Loading Game...
-        </h2>
-      </div>
-    );
-  }
 
    return (
     <div className="min-h-screen bg-green-800 relative overflow-hidden">
