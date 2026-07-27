@@ -20,6 +20,16 @@ export default function Game({
 
   const currentUser = auth.currentUser;
 
+if (!currentUser) {
+  return (
+    <div className="min-h-screen bg-green-800 flex items-center justify-center">
+      <h2 className="text-white text-2xl">
+        Signing in...
+      </h2>
+    </div>
+  );
+}
+
   useEffect(() => {
     if (!roomCode) return;
 
