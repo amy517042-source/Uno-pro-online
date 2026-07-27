@@ -228,7 +228,7 @@ export async function playCard(
       room.discardPile.length - 1
     ];
 
-  const currentColor =
+  let currentColor =
     topCard.color === "Black"
       ? room.currentColor
       : topCard.color;
@@ -327,7 +327,7 @@ export async function playCard(
   }
 
   // Wild
-  let currentColor =
+  currentColor =
     chosenColor || card.color;
 
   // Wild Draw Four
