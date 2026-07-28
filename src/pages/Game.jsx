@@ -74,6 +74,7 @@ if (!currentUser) {
         player.uid !== currentUser.uid
     );
   async function handlePlayCard(index) {
+  alert("Card clicked");
     if (!isMyTurn) {
       alert("It's not your turn.");
       return;
@@ -212,11 +213,7 @@ if (!currentUser) {
 
       {/* Your Cards */}
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full">
-console.log("Current User:", currentUser.uid);
-console.log("Current Turn:", room.currentPlayer);
-console.log("Is My Turn:", isMyTurn);
-
-        <PlayerHand
+         <PlayerHand
           cards={myCards}
           canPlay={isMyTurn}
           onCardClick={handlePlayCard}
