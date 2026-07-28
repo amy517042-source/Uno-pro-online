@@ -10,6 +10,7 @@ import {
 import PlayerHand from "../components/PlayerHand";
 import OpponentHand from "../components/OpponentHand";
 import CenterPile from "../components/CenterPile";
+import ColorPicker from "../components/ColorPicker";
 
 export default function Game({
   roomCode,
@@ -17,7 +18,8 @@ export default function Game({
 }) {
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
-
+const [colorPickerOpen, setColorPickerOpen] = useState(false);
+const [pendingCard, setPendingCard] = useState(null);
   const currentUser = auth.currentUser;
 
 if (!currentUser) {
@@ -86,16 +88,10 @@ if (!currentUser) {
       let chosenColor = null;
 
       if (card.color === "Black") {
-        chosenColor = prompt(
-          "Choose a colour:\nRed\nBlue\nGreen\nYellow"
-        );
-
-        if (!chosenColor) return;
-
-        chosenColor =
-          chosenColor.charAt(0).toUpperCase() +
-          chosenColor.slice(1).toLowerCase();
-      }
+  setPendingCard(card);
+  setColorPickerOpen(true);
+  return;
+}
 
       await playCard(
         roomCode,
@@ -113,6 +109,25 @@ if (!currentUser) {
       alert("It's not your turn.");
       return;
     }
+async function handleColorSelect(color) {
+  setColorPickerOpen(false);
+
+  if (!pendingCard) return;
+
+  try {
+    await playCard(
+      roomCode,
+      currentUser.uid,
+      pendingCard,
+      color
+    );
+
+    setPendingCard(null);
+
+  } catch (error) {
+    alert(error.message);
+  }
+}
 
     try {
       await drawCard(
@@ -218,6 +233,15 @@ if (!currentUser) {
           canPlay={isMyTurn}
           onCardClick={handlePlayCard}
         />
+        
+<ColorPicker
+  open={colorPickerOpen}
+  onSelect={handleColorSelect}
+  onClose={() => {
+    setColorPickerOpen(false);
+    setPendingCard(null);
+  }}
+/>
       </div>
     </div>
   );
