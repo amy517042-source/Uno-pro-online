@@ -76,7 +76,7 @@ if (!currentUser) {
         player.uid !== currentUser.uid
     );
   async function handlePlayCard(index) {
-  alert("Card clicked");
+  
     if (!isMyTurn) {
       alert("It's not your turn.");
       return;
@@ -109,6 +109,17 @@ if (!currentUser) {
       alert("It's not your turn.");
       return;
     }
+
+
+    try {
+      await drawCard(
+        roomCode,
+        currentUser.uid
+      );
+    } catch (error) {
+      alert(error.message);
+    }
+  }
 async function handleColorSelect(color) {
   setColorPickerOpen(false);
 
@@ -128,16 +139,6 @@ async function handleColorSelect(color) {
     alert(error.message);
   }
 }
-
-    try {
-      await drawCard(
-        roomCode,
-        currentUser.uid
-      );
-    } catch (error) {
-      alert(error.message);
-    }
-  }
 
   if (room.winner) {
     const winnerPlayer = room.players.find(
@@ -234,6 +235,8 @@ async function handleColorSelect(color) {
           onCardClick={handlePlayCard}
         />
         
+
+      </div>
 <ColorPicker
   open={colorPickerOpen}
   onSelect={handleColorSelect}
@@ -242,7 +245,6 @@ async function handleColorSelect(color) {
     setPendingCard(null);
   }}
 />
-      </div>
     </div>
   );
 }
