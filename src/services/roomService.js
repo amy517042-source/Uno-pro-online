@@ -271,7 +271,19 @@ export async function playCard(
 
   let direction = room.direction;
 
-  let nextPlayer = getNextPlayer(room);
+  const currentIndex = getPlayerIndex(
+  room.players,
+  playerUid
+);
+
+let nextPlayer =
+  room.players[
+    getNextTurn(
+      currentIndex,
+      direction,
+      room.players.length
+    )
+  ].uid;
 
   let deck = [...room.deck];
   // Reverse
