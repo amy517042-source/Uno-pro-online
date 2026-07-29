@@ -397,3 +397,26 @@ if (card.value === "Reverse") {
     nextPlayer,
   };
 }
+export async function keepDrawnCard(
+  roomCode,
+  playerUid
+) {
+  const roomRef = doc(db, "rooms", roomCode);
+
+  const snapshot = await getDoc(roomRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Room not found.");
+  }
+
+  const room = snapshot.data();
+
+  if (room.currentPlayer !== playerUid) {
+    throw new Error("Not your turn.");
+  }
+
+  await updateDoc(roomRef, {
+    drawnCard: null,
+    currentPlayer: getNextPlayer(room),
+  });
+}
