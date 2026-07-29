@@ -196,11 +196,23 @@ export async function drawCard(roomCode, playerUid) {
     drawnCard,
   ];
 
-  await updateDoc(roomRef, {
-    deck,
-    hands,
-    currentPlayer: getNextPlayer(room),
-  });
+  const playable = isValidPlay(
+  drawnCard,
+  room.discardPile[room.discardPile.length - 1],
+  room.currentColor ||
+    room.discardPile[room.discardPile.length - 1].color
+);
+
+await updateDoc(roomRef, {
+  deck,
+  hands,
+  currentPlayer: playable
+    ? playerUid
+    : getNextPlayer(room),
+  drawnCard: playable
+    ? drawnCard
+    : null,
+});
 }
 
 export async function playCard(
