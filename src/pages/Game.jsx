@@ -18,6 +18,7 @@ export default function Game({
 }) {
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
+const [drawnCard, setDrawnCard] = useState(null);
 const [colorPickerOpen, setColorPickerOpen] = useState(false);
 const [pendingCard, setPendingCard] = useState(null);
   const currentUser = auth.currentUser;
