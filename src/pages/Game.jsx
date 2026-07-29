@@ -6,7 +6,7 @@ import {
   playCard,
   drawCard,
 } from "../services/roomService";
-
+import DrawCardPopup from "../components/DrawCardPopup";
 import PlayerHand from "../components/PlayerHand";
 import OpponentHand from "../components/OpponentHand";
 import CenterPile from "../components/CenterPile";
@@ -23,15 +23,7 @@ const [colorPickerOpen, setColorPickerOpen] = useState(false);
 const [pendingCard, setPendingCard] = useState(null);
   const currentUser = auth.currentUser;
 
-if (!currentUser) {
-  return (
-    <div className="min-h-screen bg-green-800 flex items-center justify-center">
-      <h2 className="text-white text-2xl">
-        Signing in...
-      </h2>
-    </div>
-  );
-}
+
 
   useEffect(() => {
     if (!roomCode) return;
@@ -47,6 +39,27 @@ if (!currentUser) {
     return () => unsubscribe();
   }, [roomCode]);
 
+useEffect(() => {
+  if (
+    room?.drawnCard &&
+    room.currentPlayer === currentUser.uid
+  ) {
+    setDrawnCard(room.drawnCard);
+  } else {
+    setDrawnCard(null);
+  }
+}, [room, currentUser?.uid]);
+
+if (!currentUser) {
+  return (
+    <div className="min-h-screen bg-green-800 flex items-center justify-center">
+      <h2 className="text-white text-2xl">
+        Signing in...
+      </h2>
+    </div>
+  );
+}
+
   if (loading || !room || !currentUser) {
     return (
       <div className="min-h-screen bg-green-800 flex items-center justify-center">
@@ -59,16 +72,6 @@ if (!currentUser) {
 
   const myCards =
     room.hands?.[currentUser.uid] || [];
-useEffect(() => {
-  if (
-    room?.drawnCard &&
-    room.currentPlayer === currentUser.uid
-  ) {
-    setDrawnCard(room.drawnCard);
-  } else {
-    setDrawnCard(null);
-  }
-}, [room, currentUser.uid]);
   const topCard =
     room.discardPile?.[
       room.discardPile.length - 1
@@ -130,6 +133,27 @@ useEffect(() => {
       alert(error.message);
     }
   }
+async function handlePlayDrawnCard() {
+  if (!drawnCard) return;
+
+  try {
+    await playCard(
+      roomCode,
+      currentUser.uid,
+      drawnCard,
+      null
+    );
+
+    setDrawnCard(null);
+
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+async function handleKeepCard() {
+  setDrawnCard(null);
+}
 async function handleColorSelect(color) {
   setColorPickerOpen(false);
 
@@ -254,6 +278,12 @@ async function handleColorSelect(color) {
     setColorPickerOpen(false);
     setPendingCard(null);
   }}
+/>
+<DrawCardPopup
+  open={!!drawnCard}
+  card={drawnCard}
+  onPlay={handlePlayDrawnCard}
+  onKeep={handleKeepCard}
 />
     </div>
   );
