@@ -59,7 +59,16 @@ if (!currentUser) {
 
   const myCards =
     room.hands?.[currentUser.uid] || [];
-
+useEffect(() => {
+  if (
+    room?.drawnCard &&
+    room.currentPlayer === currentUser.uid
+  ) {
+    setDrawnCard(room.drawnCard);
+  } else {
+    setDrawnCard(null);
+  }
+}, [room, currentUser.uid]);
   const topCard =
     room.discardPile?.[
       room.discardPile.length - 1
