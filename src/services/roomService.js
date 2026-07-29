@@ -263,7 +263,13 @@ export async function playCard(
 
   let deck = [...room.deck];
   // Reverse
-  if (card.value === "Reverse") {
+if (card.value === "Reverse") {
+
+  // Official UNO rule:
+  // With only 2 players, Reverse acts like Skip.
+  if (room.players.length === 2) {
+    nextPlayer = playerUid;
+  } else {
     direction = reverseDirection(direction);
 
     const currentIndex = getPlayerIndex(
@@ -279,6 +285,7 @@ export async function playCard(
 
     nextPlayer = room.players[nextIndex].uid;
   }
+}
 
   // Skip
   if (card.value === "Skip") {
