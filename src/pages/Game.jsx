@@ -4,7 +4,8 @@ import { auth } from "../firebase/firebase";
 import {
   listenToRoom,
   playCard,
-  drawCard,
+ drawCard,
+  keepDrawnCard,
 } from "../services/roomService";
 import DrawCardPopup from "../components/DrawCardPopup";
 import PlayerHand from "../components/PlayerHand";
@@ -152,7 +153,17 @@ async function handlePlayDrawnCard() {
 }
 
 async function handleKeepCard() {
-  setDrawnCard(null);
+  try {
+    await keepDrawnCard(
+      roomCode,
+      currentUser.uid
+    );
+
+    setDrawnCard(null);
+
+  } catch (error) {
+    alert(error.message);
+  }
 }
 async function handleColorSelect(color) {
   setColorPickerOpen(false);
