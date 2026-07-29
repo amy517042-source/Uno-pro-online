@@ -17,6 +17,27 @@ import {
   getDrawAmount,
 } from "../game/rules";
 
+function reshuffleDeck(deck, discardPile) {
+  if (deck.length > 0) {
+    return { deck, discardPile };
+  }
+
+  if (discardPile.length <= 1) {
+    return { deck, discardPile };
+  }
+
+  const topCard = discardPile.pop();
+
+  deck = [...discardPile].sort(() => Math.random() - 0.5);
+
+  discardPile = [topCard];
+
+  return {
+    deck,
+    discardPile,
+  };
+}
+
 function generateRoomCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
@@ -179,12 +200,17 @@ export async function drawCard(roomCode, playerUid) {
     throw new Error("Not your turn.");
   }
 
-  if (room.deck.length === 0) {
-    throw new Error("Deck is empty.");
-  }
+  let deck = [...room.deck];
+let discardPile = [...room.discardPile];
 
-  const deck = [...room.deck];
+const reshuffled = reshuffleDeck(
+  deck,
+  discardPile
+);
 
+deck = reshuffled.deck;
+discardPile = reshuffled.discardPile;
+  
   const hands = {
     ...room.hands,
   };
@@ -205,6 +231,7 @@ export async function drawCard(roomCode, playerUid) {
 
 await updateDoc(roomRef, {
   deck,
+  discardPile,
   hands,
   currentPlayer: playable
     ? playerUid
@@ -214,6 +241,7 @@ await updateDoc(roomRef, {
     : null,
 });
 }
+
 
 export async function playCard(
   roomCode,
@@ -264,10 +292,6 @@ export async function playCard(
       (c) => c.id !== card.id
     );
 
-  const discardPile = [
-    ...room.discardPile,
-    card,
-  ];
 
   let direction = room.direction;
 
@@ -286,6 +310,11 @@ let nextPlayer =
   ].uid;
 
   let deck = [...room.deck];
+let discardPile = [...room.discardPile];
+
+discardPile.push(card);
+
+
   // Reverse
 if (card.value === "Reverse") {
 
@@ -338,11 +367,22 @@ if (card.value === "Reverse") {
     const victim = nextPlayer;
 
     for (let i = 0; i < amount; i++) {
-      if (deck.length === 0) break;
 
-      hands[victim].push(deck.shift());
-    }
+  const reshuffled = reshuffleDeck(
+    deck,
+    discardPile
+  );
 
+  deck = reshuffled.deck;
+  discardPile = reshuffled.discardPile;
+if (deck.length === 0) {
+  throw new Error("No cards left.");
+}
+
+  if (deck.length === 0) break;
+
+  hands[victim].push(deck.shift());
+}
     const victimIndex = getPlayerIndex(
       room.players,
       victim
@@ -368,10 +408,19 @@ if (card.value === "Reverse") {
     const victim = nextPlayer;
 
     for (let i = 0; i < 4; i++) {
-      if (deck.length === 0) break;
 
-      hands[victim].push(deck.shift());
-    }
+  const reshuffled = reshuffleDeck(
+    deck,
+    discardPile
+  );
+
+  deck = reshuffled.deck;
+  discardPile = reshuffled.discardPile;
+
+  if (deck.length === 0) break;
+
+  hands[victim].push(deck.shift());
+}
 
     const victimIndex = getPlayerIndex(
       room.players,
@@ -394,15 +443,16 @@ if (card.value === "Reverse") {
     winner = playerUid;
   }
   await updateDoc(roomRef, {
-    hands,
-    deck,
-    discardPile,
-    currentPlayer: winner ? null : nextPlayer,
-    direction,
-    currentColor,
-    winner,
-    status: winner ? "finished" : "playing",
-  });
+  hands,
+  deck,
+  discardPile,
+  currentPlayer: winner ? null : nextPlayer,
+  direction,
+  currentColor,
+  winner,
+  drawnCard: null,
+  status: winner ? "finished" : "playing",
+});
 
   return {
     winner,
