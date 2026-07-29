@@ -168,12 +168,12 @@ async function handleColorSelect(color) {
       <div className="absolute inset-0 flex items-center justify-center">
 
         <CenterPile
-          topCard={topCard}
-          currentColor={topCard?.color || ""}
-          deckCount={deckCount}
-          canDraw={isMyTurn}
-          onDraw={handleDrawCard}
-        />
+  topCard={topCard}
+  currentColor={room.currentColor || topCard?.color || ""}
+  deckCount={deckCount}
+  canDraw={isMyTurn}
+  onDraw={handleDrawCard}
+/>
 
       </div>
 
