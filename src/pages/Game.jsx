@@ -204,8 +204,7 @@ async function handleColorSelect(color) {
 }
 
   if (room.winner) {
-localStorage.removeItem("unoRoomCode");
-localStorage.removeItem("unoPlayerName");
+
 
     const winnerPlayer = room.players.find(
       (player) => player.uid === room.winner
@@ -222,6 +221,18 @@ localStorage.removeItem("unoPlayerName");
           <h2 className="text-3xl text-green-700 font-bold">
             {winnerPlayer?.name}
           </h2>
+<button
+  className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-bold"
+  onClick={() => {
+    localStorage.removeItem("unoRoomCode");
+    localStorage.removeItem("unoPlayerName");
+
+    window.location.reload();
+  }}
+>
+  Back to Home
+</button>
+
 
         </div>
       </div>
