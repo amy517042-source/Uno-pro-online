@@ -137,11 +137,29 @@ if (!currentUser) {
 async function handlePlayDrawnCard() {
   if (!drawnCard) return;
 
+  // Find the exact card inside the player's hand
+  const cardInHand = myCards.find(
+    (c) => c.id === drawnCard.id
+  );
+
+  if (!cardInHand) {
+    alert("Card not found.");
+    return;
+  }
+
+  // Wild / Wild Draw 4
+  if (cardInHand.color === "Black") {
+    setPendingCard(cardInHand);
+    setColorPickerOpen(true);
+    setDrawnCard(null);
+    return;
+  }
+
   try {
     await playCard(
       roomCode,
       currentUser.uid,
-      drawnCard,
+      cardInHand,
       null
     );
 
