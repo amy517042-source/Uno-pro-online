@@ -2,6 +2,11 @@ import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 
 export async function loginAnonymous() {
+
+  if (auth.currentUser) {
+    return auth.currentUser;
+  }
+
   try {
     const userCredential = await signInAnonymously(auth);
     return userCredential.user;
