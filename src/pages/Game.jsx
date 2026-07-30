@@ -204,6 +204,9 @@ async function handleColorSelect(color) {
 }
 
   if (room.winner) {
+localStorage.removeItem("unoRoomCode");
+localStorage.removeItem("unoPlayerName");
+
     const winnerPlayer = room.players.find(
       (player) => player.uid === room.winner
     );
