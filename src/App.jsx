@@ -5,9 +5,17 @@ import Game from "./pages/Game";
 import { loginAnonymous } from "./services/auth";
 
 export default function App() {
-  const [screen, setScreen] = useState("home");
-  const [roomCode, setRoomCode] = useState("");
-  const [playerName, setPlayerName] = useState("");
+  const [screen, setScreen] = useState(
+  localStorage.getItem("unoRoomCode")
+    ? "game"
+    : "home"
+);
+  const [roomCode, setRoomCode] = useState(
+  localStorage.getItem("unoRoomCode") || ""
+);
+  const [playerName, setPlayerName] = useState(
+  localStorage.getItem("unoPlayerName") || ""
+);
 
   useEffect(() => {
     async function login() {
@@ -21,6 +29,21 @@ export default function App() {
 
     login();
   }, []);
+
+useEffect(() => {
+  if (roomCode) {
+    localStorage.setItem("unoRoomCode", roomCode);
+  }
+}, [roomCode]);
+
+useEffect(() => {
+  if (playerName) {
+    localStorage.setItem(
+      "unoPlayerName",
+      playerName
+    );
+  }
+}, [playerName]);
 
   if (screen === "home") {
     return (
