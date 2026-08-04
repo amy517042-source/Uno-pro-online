@@ -7,26 +7,22 @@ export default function OpponentHand({
   cardCount,
   isCurrentTurn,
 }) {
-  const radius = 220;
+  const positions = [
+    { top: "8%", left: "50%", transform: "translateX(-50%)" },   // Top
+    { top: "30%", left: "12%" },                                 // Left
+    { top: "30%", right: "12%" },                                // Right
+    { top: "55%", left: "8%" },                                  // Bottom Left
+    { top: "55%", right: "8%" },                                 // Bottom Right
+    { top: "12%", left: "20%" },                                 // Top Left
+    { top: "12%", right: "20%" },                                // Top Right
+    { top: "45%", left: "3%" },                                  // Far Left
+    { top: "45%", right: "3%" },                                 // Far Right
+  ];
 
-  const angle =
-    (360 / totalPlayers) * index - 90;
-
-  const x =
-    Math.cos((angle * Math.PI) / 180) * radius;
-
-  const y =
-    Math.sin((angle * Math.PI) / 180) * radius;
+  const pos = positions[index % positions.length];
 
   return (
-    <div
-      className="absolute"
-      style={{
-        left: "50%",
-        top: "50%",
-        transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
-      }}
-    >
+    <div className="absolute" style={pos}>
       <div className="flex flex-col items-center">
         <div
           className={`mb-2 px-3 py-1 rounded-full font-bold ${
