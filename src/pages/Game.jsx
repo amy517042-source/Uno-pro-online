@@ -254,50 +254,20 @@ async function handleColorSelect(color) {
 
       </div>
 
-      {/* Top Opponent */}
-      {opponents[0] && (
-        <div className="absolute top-5 left-1/2 -translate-x-1/2">
-          <OpponentHand
-            playerName={opponents[0].name}
-            cardCount={
-              room.hands?.[opponents[0].uid]?.length || 0
-            }
-            isCurrentTurn={
-              room.currentPlayer === opponents[0].uid
-            }
-          />
-        </div>
-      )}
-
-      {/* Left Opponent */}
-      {opponents[1] && (
-        <div className="absolute left-5 top-1/2 -translate-y-1/2">
-          <OpponentHand
-            playerName={opponents[1].name}
-            cardCount={
-              room.hands?.[opponents[1].uid]?.length || 0
-            }
-            isCurrentTurn={
-              room.currentPlayer === opponents[1].uid
-            }
-          />
-        </div>
-      )}
-
-      {/* Right Opponent */}
-      {opponents[2] && (
-        <div className="absolute right-5 top-1/2 -translate-y-1/2">
-          <OpponentHand
-            playerName={opponents[2].name}
-            cardCount={
-              room.hands?.[opponents[2].uid]?.length || 0
-            }
-            isCurrentTurn={
-              room.currentPlayer === opponents[2].uid
-            }
-          />
-        </div>
-      )}
+      {opponents.map((player, index) => (
+  <OpponentHand
+    key={player.uid}
+    player={player}
+    index={index}
+    totalPlayers={opponents.length}
+    cardCount={
+      room.hands?.[player.uid]?.length || 0
+    }
+    isCurrentTurn={
+      room.currentPlayer === player.uid
+    }
+  />
+))}
 
       {/* Turn Indicator */}
       <div className="absolute top-2 left-2 bg-black/60 text-white px-4 py-2 rounded-lg font-bold">
