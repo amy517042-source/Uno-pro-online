@@ -1,16 +1,26 @@
 import CardBack from "./CardBack";
+import { getPlayerPosition } from "../utils/playerPositions";
 
 export default function OpponentSeat({
   player,
+  index,
+  totalPlayers,
   cardCount,
-  style,
   isCurrentTurn,
 }) {
+  const position = getPlayerPosition(
+  index,
+  totalPlayers
+);
   return (
     <div
-      style={style}
-      className="absolute flex flex-col items-center"
-    >
+  style={{
+    left: position.left,
+    top: position.top,
+    transform: "translate(-50%, -50%)",
+  }}
+  className="absolute flex flex-col items-center"
+>
       <div
         className={`mb-2 px-3 py-1 rounded-full font-bold text-white ${
           isCurrentTurn
