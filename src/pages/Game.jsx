@@ -12,6 +12,9 @@ import PlayerHand from "../components/PlayerHand";
 import OpponentHand from "../components/OpponentHand";
 import CenterPile from "../components/CenterPile";
 import ColorPicker from "../components/ColorPicker";
+import GameTable from "../components/GameTable";
+import OpponentSeat from "../components/OpponentSeat";
+import { getPlayerPositions } from "../components/playerPositions";
 
 export default function Game({
   roomCode,
@@ -89,6 +92,9 @@ if (!currentUser) {
       (player) =>
         player.uid !== currentUser.uid
     );
+     const playerPositions = getPlayerPositions(
+  opponents.length
+);
   async function handlePlayCard(index) {
   
     if (!isMyTurn) {
@@ -239,7 +245,7 @@ async function handleColorSelect(color) {
     );
   }
   return (
-    <div className="min-h-screen bg-green-800 relative overflow-hidden">
+  <GameTable>
 
       {/* Center Table */}
       <div className="absolute inset-0 flex items-center justify-center">
@@ -255,11 +261,10 @@ async function handleColorSelect(color) {
       </div>
 
       {opponents.map((player, index) => (
-  <OpponentHand
+  <OpponentSeat
     key={player.uid}
     player={player}
-    index={index}
-    totalPlayers={opponents.length}
+    style={playerPositions[index]}
     cardCount={
       room.hands?.[player.uid]?.length || 0
     }
@@ -298,6 +303,6 @@ async function handleColorSelect(color) {
   onPlay={handlePlayDrawnCard}
   onKeep={handleKeepCard}
 />
-    </div>
-  );
+    </GameTable>
+);
 }
