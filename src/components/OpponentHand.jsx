@@ -8,13 +8,20 @@ export default function OpponentHand({
   isCurrentTurn = false,
 }) {
   // Spread players evenly around the table
-  const angle =
-    ((index * 360) / totalPlayers - 90) *
-    (Math.PI / 180);
+  const spread = 160;
+
+const start = -170;
+
+const angle =
+(
+  start +
+  (spread / Math.max(totalPlayers - 1, 1)) * index
+) *
+(Math.PI / 180);
 
   // Responsive radius
   const radius =
-    window.innerWidth < 768 ? 34 : 40;
+window.innerWidth < 768 ? 28 : 34;
 
   const x = Math.cos(angle) * radius;
   const y = Math.sin(angle) * radius;
