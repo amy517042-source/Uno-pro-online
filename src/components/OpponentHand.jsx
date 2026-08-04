@@ -4,43 +4,32 @@ export default function OpponentHand({
   player,
   index,
   totalPlayers,
-  cardCount = 0,
-  isCurrentTurn = false,
+  cardCount,
+  isCurrentTurn,
 }) {
-  // Spread players evenly around the table
-  const spread = 160;
+  const radius = 220;
 
-const start = -170;
+  const angle =
+    (360 / totalPlayers) * index - 90;
 
-const angle =
-(
-  start +
-  (spread / Math.max(totalPlayers - 1, 1)) * index
-) *
-(Math.PI / 180);
+  const x =
+    Math.cos((angle * Math.PI) / 180) * radius;
 
-  // Responsive radius
-  const radius =
-window.innerWidth < 768 ? 28 : 34;
-
-  const x = Math.cos(angle) * radius;
-  const y = Math.sin(angle) * radius;
+  const y =
+    Math.sin((angle * Math.PI) / 180) * radius;
 
   return (
     <div
-      className={`absolute transition-all duration-300 ${
-        isCurrentTurn ? "scale-110" : ""
-      }`}
+      className="absolute"
       style={{
-        left: `${50 + x}%`,
-        top: `${50 + y}%`,
-        transform: "translate(-50%, -50%)",
+        left: "50%",
+        top: "50%",
+        transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
       }}
     >
       <div className="flex flex-col items-center">
-
         <div
-          className={`mb-2 px-3 py-1 rounded-full text-sm font-bold ${
+          className={`mb-2 px-3 py-1 rounded-full font-bold ${
             isCurrentTurn
               ? "bg-yellow-400 text-black"
               : "bg-gray-800 text-white"
@@ -49,22 +38,7 @@ window.innerWidth < 768 ? 28 : 34;
           {player.name} ({cardCount})
         </div>
 
-        <div className="flex -space-x-6">
-          {Array.from({
-            length: Math.min(cardCount, 7),
-          }).map((_, i) => (
-            <div
-              key={i}
-              style={{
-                transform: `rotate(${(i - 3) * 5}deg)`,
-                zIndex: i,
-              }}
-            >
-              <CardBack />
-            </div>
-          ))}
-        </div>
-
+        <CardBack />
       </div>
     </div>
   );
