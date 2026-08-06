@@ -14,7 +14,7 @@ import CenterPile from "../components/CenterPile";
 import ColorPicker from "../components/ColorPicker";
 import GameTable from "../components/GameTable";
 import OpponentSeat from "../components/OpponentSeat";
-import { getPlayerPositions } from "../components/playerPositions";
+
 
 export default function Game({
   roomCode,
@@ -92,9 +92,7 @@ if (!currentUser) {
       (player) =>
         player.uid !== currentUser.uid
     );
-     const playerPositions = getPlayerPositions(
-  opponents.length
-);
+     
   async function handlePlayCard(index) {
   
     if (!isMyTurn) {
@@ -264,7 +262,8 @@ async function handleColorSelect(color) {
   <OpponentSeat
     key={player.uid}
     player={player}
-    style={playerPositions[index]}
+    index={index}
+    totalPlayers={opponents.length}
     cardCount={
       room.hands?.[player.uid]?.length || 0
     }
