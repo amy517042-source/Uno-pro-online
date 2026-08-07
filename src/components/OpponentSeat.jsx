@@ -25,39 +25,39 @@ export default function OpponentSeat({
     }
 
     // 2 opponents
-    if (totalPlayers === 2) {
-      return index === 0
-        ? {
-            left: "18%",
-            top: "42%",
-            orientation: "vertical",
-          }
-        : {
-            left: "82%",
-            top: "42%",
-            orientation: "vertical",
-          };
-    }
+if (totalPlayers === 2) {
+  return index === 0
+    ? {
+        left: "8%",
+        top: "50%",
+        orientation: "vertical",
+      }
+    : {
+        left: "92%",
+        top: "50%",
+        orientation: "vertical",
+      };
+}
 
     // 3 opponents
     if (totalPlayers === 3) {
       const seats = [
-        {
-          left: "15%",
-          top: "42%",
-          orientation: "vertical",
-        },
-        {
-          left: "50%",
-          top: "10%",
-          orientation: "horizontal",
-        },
-        {
-          left: "85%",
-          top: "42%",
-          orientation: "vertical",
-        },
-      ];
+  {
+    left: "8%",
+    top: "50%",
+    orientation: "vertical",
+  },
+  {
+    left: "50%",
+    top: "8%",
+    orientation: "horizontal",
+  },
+  {
+    left: "92%",
+    top: "50%",
+    orientation: "vertical",
+  },
+];
 
       return seats[index];
     }
