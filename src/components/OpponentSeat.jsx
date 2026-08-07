@@ -8,132 +8,174 @@ export default function OpponentSeat({
   isCurrentTurn,
 }) {
   /*
-   * Opponents are distributed across:
-   * LEFT SIDE → TOP → RIGHT SIDE
+   * Players are positioned around the central circle.
    *
-   * The local player's hand remains at the bottom.
+   * The local player is NOT included here.
+   * Their hand remains at the bottom.
    */
 
-  const getSeat = () => {
-    // 1 opponent
+  const total = totalPlayers + 1;
+
+  /*
+   * Spread opponents around the upper/side area.
+   *
+   * We leave the bottom area free for the local
+   * player's cards.
+   */
+
+  const getPosition = () => {
     if (totalPlayers === 1) {
       return {
-        left: "50%",
-        top: "10%",
-        orientation: "horizontal",
+        left: 50,
+        top: 12,
+        rotation: 0,
       };
-    }
-
-    // 2 opponents
-if (totalPlayers === 2) {
-  return index === 0
-    ? {
-        left: "8%",
-        top: "50%",
-        orientation: "vertical",
-      }
-    : {
-        left: "92%",
-        top: "50%",
-        orientation: "vertical",
-      };
-}
-
-    // 3 opponents
-    if (totalPlayers === 3) {
-      const seats = [
-  {
-    left: "8%",
-    top: "50%",
-    orientation: "vertical",
-  },
-  {
-    left: "50%",
-    top: "8%",
-    orientation: "horizontal",
-  },
-  {
-    left: "92%",
-    top: "50%",
-    orientation: "vertical",
-  },
-];
-
-      return seats[index];
     }
 
     /*
-     * 4-9 opponents:
-     * distribute them along the upper arc.
+     * 2 opponents
+     */
+    if (totalPlayers === 2) {
+      const positions = [
+        {
+          left: 18,
+          top: 40,
+          rotation: -90,
+        },
+        {
+          left: 82,
+          top: 40,
+          rotation: 90,
+        },
+      ];
+
+      return positions[index];
+    }
+
+    /*
+     * 3 opponents
+     */
+    if (totalPlayers === 3) {
+      const positions = [
+        {
+          left: 15,
+          top: 38,
+          rotation: -90,
+        },
+        {
+          left: 50,
+          top: 10,
+          rotation: 0,
+        },
+        {
+          left: 85,
+          top: 38,
+          rotation: 90,
+        },
+      ];
+
+      return positions[index];
+    }
+
+    /*
+     * 4+ opponents
+     *
+     * Spread them across the upper 260°
+     * of the circle.
      */
 
+    const startAngle = -160;
+    const endAngle = -20;
+
     const angle =
-      Math.PI -
-      (Math.PI * index) / (totalPlayers - 1);
+      startAngle +
+      ((endAngle - startAngle) *
+        index) /
+        (totalPlayers - 1);
 
-    const radiusX = 40;
-    const radiusY = 35;
+    const radians =
+      (angle * Math.PI) / 180;
 
-    const x =
-      50 + Math.cos(angle) * radiusX;
+    const radiusX = 38;
+    const radiusY = 38;
 
-    const y =
-      48 - Math.sin(angle) * radiusY;
+    const left =
+      50 + Math.cos(radians) * radiusX;
 
-    let orientation = "horizontal";
+    const top =
+      50 + Math.sin(radians) * radiusY;
 
-    if (x < 30) {
-      orientation = "vertical";
-    }
-
-    if (x > 70) {
-      orientation = "vertical";
-    }
+    /*
+     * Cards face toward the center.
+     */
+    const rotation = angle + 90;
 
     return {
-      left: `${x}%`,
-      top: `${y}%`,
-      orientation,
+      left,
+      top,
+      rotation,
     };
   };
 
-  const seat = getSeat();
+  const position = getPosition();
 
-  const visibleCards = Math.min(cardCount, 7);
-const total = totalPlayers + 1; // +1 includes yourself
+  /*
+   * Automatically reduce card size
+   * when more players join.
+   */
 
-let cardClass = "!w-10 !h-16 sm:!w-12 sm:!h-18";
+  let cardClass =
+    "!w-10 !h-16";
 
-if (total >= 4) {
-  cardClass = "!w-9 !h-14 sm:!w-10 sm:!h-16";
-}
+  if (total >= 4) {
+    cardClass =
+      "!w-9 !h-14";
+  }
 
-if (total >= 6) {
-  cardClass = "!w-8 !h-12 sm:!w-9 sm:!h-14";
-}
+  if (total >= 6) {
+    cardClass =
+      "!w-8 !h-12";
+  }
 
-if (total >= 8) {
-  cardClass = "!w-7 !h-11 sm:!w-8 sm:!h-12";
-}
+  if (total >= 8) {
+    cardClass =
+      "!w-7 !h-11";
+  }
 
-if (total >= 10) {
-  cardClass = "!w-6 !h-10 sm:!w-7 sm:!h-11";
-}
+  if (total >= 10) {
+    cardClass =
+      "!w-6 !h-10";
+  }
+
+  const visibleCards =
+    Math.min(cardCount, 7);
+
   return (
     <div
-      className="absolute z-20 flex flex-col items-center"
+      className="
+        absolute
+        z-20
+        flex
+        flex-col
+        items-center
+        pointer-events-none
+      "
       style={{
-        left: seat.left,
-        top: seat.top,
-        transform: "translate(-50%, -50%)",
+        left: `${position.left}%`,
+        top: `${position.top}%`,
+        transform: `
+          translate(-50%, -50%)
+          rotate(${position.rotation}deg)
+        `,
       }}
     >
+
       {/* Player name */}
       <div
         className={`
           whitespace-nowrap
           mb-1
-          px-2
+          px-3
           py-1
           rounded-full
           text-xs
@@ -150,45 +192,43 @@ if (total >= 10) {
         {player.name} ({cardCount})
       </div>
 
-      {/* Cards */}
-      <div
-        className={
-          seat.orientation === "vertical"
-            ? "relative w-16 h-24"
-            : "relative w-24 h-16"
-        }
-      >
+      {/* Opponent cards */}
+      <div className="relative h-16 w-28">
+
         {Array.from({
           length: visibleCards,
         }).map((_, i) => {
+
           const middle =
             (visibleCards - 1) / 2;
 
-          const offset = i - middle;
-
-          const isVertical =
-            seat.orientation === "vertical";
+          const offset =
+            i - middle;
 
           return (
             <div
               key={i}
-              className="absolute left-1/2 top-1/2"
+              className="
+                absolute
+                left-1/2
+                top-1/2
+              "
               style={{
-                transform: isVertical
-                  ? `translate(-50%, -50%)
-                     translateY(${offset * 7}px)
-                     rotate(90deg)`
-                  : `translate(-50%, -50%)
-                     translateX(${offset * 9}px)
-                     rotate(${offset * 4}deg)`,
-
+                transform: `
+                  translate(-50%, -50%)
+                  translateX(${offset * 7}px)
+                  rotate(${offset * 4}deg)
+                `,
                 zIndex: i,
               }}
             >
-              <CardBack className={cardClass} />
+              <CardBack
+                className={cardClass}
+              />
             </div>
           );
         })}
+
       </div>
     </div>
   );
