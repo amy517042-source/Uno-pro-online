@@ -99,8 +99,26 @@ export default function OpponentSeat({
 
   const seat = getSeat();
 
-  const visibleCards = Math.min(cardCount, 5);
+  const visibleCards = Math.min(cardCount, 7);
+const total = totalPlayers + 1; // +1 includes yourself
 
+let cardClass = "!w-10 !h-16 sm:!w-12 sm:!h-18";
+
+if (total >= 4) {
+  cardClass = "!w-9 !h-14 sm:!w-10 sm:!h-16";
+}
+
+if (total >= 6) {
+  cardClass = "!w-8 !h-12 sm:!w-9 sm:!h-14";
+}
+
+if (total >= 8) {
+  cardClass = "!w-7 !h-11 sm:!w-8 sm:!h-12";
+}
+
+if (total >= 10) {
+  cardClass = "!w-6 !h-10 sm:!w-7 sm:!h-11";
+}
   return (
     <div
       className="absolute z-20 flex flex-col items-center"
@@ -167,7 +185,7 @@ export default function OpponentSeat({
                 zIndex: i,
               }}
             >
-              <CardBack className="!w-9 !h-14 sm:!w-10 sm:!h-16" />
+              <CardBack className={cardClass} />
             </div>
           );
         })}
