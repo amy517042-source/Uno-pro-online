@@ -9,17 +9,18 @@ export default function OpponentSeat({
 }) {
 
   /*
-   * Center of the game.
+   * Position opponents around the center.
    *
-   * Players are positioned around it.
-   *
-   * We intentionally leave a large empty
-   * area around the center pile.
+   * The center area is reserved for:
+   * DRAW + DISCARD PILE
    */
 
   const getPosition = () => {
 
-    // 1 opponent
+    // -------------------------
+    // 1 OPPONENT
+    // -------------------------
+
     if (totalPlayers === 1) {
       return {
         left: "50%",
@@ -29,25 +30,33 @@ export default function OpponentSeat({
       };
     }
 
-    // 2 opponents
+
+    // -------------------------
+    // 2 OPPONENTS
+    // -------------------------
+
     if (totalPlayers === 2) {
 
       return index === 0
         ? {
-            left: "13%",
+            left: "12%",
             top: "50%",
             rotation: 90,
             direction: "vertical",
           }
         : {
-            left: "87%",
+            left: "88%",
             top: "50%",
             rotation: -90,
             direction: "vertical",
           };
     }
 
-    // 3 opponents
+
+    // -------------------------
+    // 3 OPPONENTS
+    // -------------------------
+
     if (totalPlayers === 3) {
 
       const seats = [
@@ -57,12 +66,14 @@ export default function OpponentSeat({
           rotation: 90,
           direction: "vertical",
         },
+
         {
           left: "50%",
           top: "12%",
           rotation: 0,
           direction: "horizontal",
         },
+
         {
           left: "88%",
           top: "50%",
@@ -74,38 +85,45 @@ export default function OpponentSeat({
       return seats[index];
     }
 
-    /*
-     * 4–9 opponents
-     *
-     * Upper semicircle.
-     */
+
+    // -------------------------
+    // 4–9 OPPONENTS
+    // -------------------------
 
     const angle =
       Math.PI -
       (Math.PI * index) /
         (totalPlayers - 1);
 
-    const radiusX = 39;
-    const radiusY = 37;
+    const radiusX = 40;
+    const radiusY = 38;
 
     const x =
       50 + Math.cos(angle) * radiusX;
 
     const y =
-      45 - Math.sin(angle) * radiusY;
+      42 - Math.sin(angle) * radiusY;
+
 
     let rotation = 0;
     let direction = "horizontal";
+
+
+    // LEFT SIDE
 
     if (x < 30) {
       rotation = 90;
       direction = "vertical";
     }
 
+
+    // RIGHT SIDE
+
     if (x > 70) {
       rotation = -90;
       direction = "vertical";
     }
+
 
     return {
       left: `${x}%`,
@@ -115,20 +133,19 @@ export default function OpponentSeat({
     };
   };
 
+
   const seat = getPosition();
 
+
   /*
-   * Don't render all cards for opponents.
-   * We only need to visually show their hand.
+   * Don't show all opponent cards.
+   *
+   * We only display up to 7 card backs
+   * to keep the interface clean.
    */
+
   const visibleCards = Math.min(cardCount, 7);
 
-  const cardWidth =
-    totalPlayers >= 8
-      ? "w-7 h-11"
-      : totalPlayers >= 6
-      ? "w-8 h-12"
-      : "w-9 h-14";
 
   return (
     <div
@@ -143,11 +160,13 @@ export default function OpponentSeat({
       style={{
         left: seat.left,
         top: seat.top,
-        transform: "translate(-50%, -50%)",
+        transform:
+          "translate(-50%, -50%)",
       }}
     >
 
       {/* PLAYER NAME */}
+
       <div
         className={`
           whitespace-nowrap
@@ -170,10 +189,13 @@ export default function OpponentSeat({
         {player.name} ({cardCount})
       </div>
 
-      {/* OPPONENT CARDS */}
+
+      {/* OPPONENT CARD AREA */}
+
       <div
         className={`
           relative
+
           ${
             seat.direction === "vertical"
               ? "w-14 h-20"
@@ -189,12 +211,18 @@ export default function OpponentSeat({
           const middle =
             (visibleCards - 1) / 2;
 
-          const offset = i - middle;
+          const offset =
+            i - middle;
+
 
           return (
             <div
               key={i}
-              className="absolute left-1/2 top-1/2"
+              className="
+                absolute
+                left-1/2
+                top-1/2
+              "
               style={{
                 transform:
                   seat.direction === "vertical"
@@ -208,16 +236,28 @@ export default function OpponentSeat({
                       translateX(${offset * 7}px)
                       rotate(${offset * 3}deg)
                     `,
+
                 zIndex: i,
               }}
             >
+
               <CardBack
-                className={`!${cardWidth}`}
+                className={
+                  totalPlayers >= 8
+                    ? "!w-7 !h-11"
+                    : totalPlayers >= 6
+                    ? "!w-8 !h-12"
+                    : "!w-9 !h-14"
+                }
               />
+
             </div>
           );
+
         })}
+
       </div>
+
     </div>
   );
 }
