@@ -9,65 +9,90 @@ export default function CenterPile({
   canDraw,
 }) {
   return (
-    <div className="flex items-center justify-center gap-5">
+    <div
+      className="
+        absolute
+        left-1/2
+        top-1/2
+        -translate-x-1/2
+        -translate-y-1/2
+        z-30
+        flex
+        items-center
+        gap-3
+        sm:gap-5
+      "
+    >
 
-      {/* DRAW DECK */}
+      {/* DRAW PILE */}
       <div className="flex flex-col items-center">
         <CardBack
           onClick={onDraw}
           disabled={!canDraw}
-          className="w-14 h-20 sm:w-16 sm:h-24"
-        />
-
-        <p className="mt-1 text-white text-sm font-bold">
-          Draw ({deckCount})
-        </p>
-      </div>
-
-      {/* DISCARD PILE + SMALL CIRCLE */}
-      <div className="relative flex items-center justify-center">
-
-        {/* ONLY DISCARD PILE CIRCLE */}
-        <div
           className="
-            absolute
-            w-32 h-32
-            sm:w-40 sm:h-40
-            rounded-full
-            border-4
-            border-[#14592b]
-            bg-[#1c7b3f]
-            shadow-inner
+            !w-14 !h-22
+            sm:!w-16 sm:!h-24
           "
         />
 
-        {/* DISCARD CARD */}
-        <div className="relative z-10 flex flex-col items-center">
+        <span className="mt-1 text-white text-xs sm:text-sm font-bold whitespace-nowrap">
+          Draw ({deckCount})
+        </span>
+      </div>
 
-          {topCard ? (
-            <UnoCard
-              card={
-                topCard.color === "Black"
-                  ? {
-                      ...topCard,
-                      color: currentColor || "Black",
-                    }
-                  : topCard
-              }
-              disabled
-              className="w-14 h-20 sm:w-16 sm:h-24"
-            />
-          ) : (
-            <div className="w-14 h-20 sm:w-16 sm:h-24 rounded-xl border-2 border-dashed border-white" />
-          )}
+      {/* DISCARD CIRCLE */}
+      <div
+        className="
+          relative
+          w-28 h-28
+          sm:w-36 sm:h-36
+          rounded-full
+          border-2
+          border-white/20
+          bg-black/5
+          flex
+          items-center
+          justify-center
+        "
+      >
+        {topCard ? (
+          <UnoCard
+            card={
+              topCard.color === "Black"
+                ? {
+                    ...topCard,
+                    color: currentColor || "Black",
+                  }
+                : topCard
+            }
+            disabled
+          />
+        ) : (
+          <div
+            className="
+              w-14 h-20
+              sm:w-16 sm:h-24
+              rounded-xl
+              border-2
+              border-dashed
+              border-white/40
+            "
+          />
+        )}
 
-          <p
+        {/* ACTIVE COLOR */}
+        {currentColor && (
+          <div
             className={`
-              mt-1
+              absolute
+              -bottom-7
+              left-1/2
+              -translate-x-1/2
               text-xs
               sm:text-sm
               font-bold
               whitespace-nowrap
+
               ${
                 currentColor === "Red"
                   ? "text-red-400"
@@ -82,11 +107,9 @@ export default function CenterPile({
             `}
           >
             {currentColor}
-          </p>
-
-        </div>
+          </div>
+        )}
       </div>
-
     </div>
   );
 }
