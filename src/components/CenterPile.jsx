@@ -8,108 +8,102 @@ export default function CenterPile({
   onDraw,
   canDraw,
 }) {
-  return (
-    <div
-      className="
-        absolute
-        left-1/2
-        top-1/2
-        -translate-x-1/2
-        -translate-y-1/2
-        z-30
-        flex
-        items-center
-        gap-3
-        sm:gap-5
-      "
-    >
+  const activeColor =
+    currentColor || topCard?.color || "";
 
-      {/* DRAW PILE */}
+  return (
+    <div className="flex items-center justify-center gap-5 sm:gap-8">
+
+      {/* ================= DRAW PILE ================= */}
       <div className="flex flex-col items-center">
         <CardBack
           onClick={onDraw}
           disabled={!canDraw}
-          className="
-            !w-14 !h-22
-            sm:!w-16 sm:!h-24
-          "
+          className="w-16 h-24 sm:w-20 sm:h-32"
         />
 
-        <span className="mt-1 text-white text-xs sm:text-sm font-bold whitespace-nowrap">
+        <p className="mt-2 text-white font-bold text-sm sm:text-base whitespace-nowrap">
           Draw ({deckCount})
-        </span>
+        </p>
       </div>
 
-      {/* DISCARD CIRCLE */}
-      <div
-        className="
-          relative
-          w-28 h-28
-          sm:w-36 sm:h-36
-          rounded-full
-          border-2
-          border-white/20
-          bg-black/5
-          flex
-          items-center
-          justify-center
-        "
-      >
-        {topCard ? (
-          <UnoCard
-            card={
-              topCard.color === "Black"
-                ? {
-                    ...topCard,
-                    color: currentColor || "Black",
-                  }
-                : topCard
-            }
-            disabled
-          />
-        ) : (
-          <div
-            className="
-              w-14 h-20
-              sm:w-16 sm:h-24
-              rounded-xl
-              border-2
-              border-dashed
-              border-white/40
-            "
-          />
-        )}
 
-        {/* ACTIVE COLOR */}
-        {currentColor && (
-          <div
-            className={`
-              absolute
-              -bottom-7
-              left-1/2
-              -translate-x-1/2
-              text-xs
-              sm:text-sm
-              font-bold
-              whitespace-nowrap
+      {/* ================= DISCARD PILE ================= */}
+      <div className="flex flex-col items-center">
 
-              ${
-                currentColor === "Red"
-                  ? "text-red-400"
-                  : currentColor === "Blue"
-                  ? "text-blue-400"
-                  : currentColor === "Green"
-                  ? "text-green-300"
-                  : currentColor === "Yellow"
-                  ? "text-yellow-300"
-                  : "text-white"
+        {/* ONLY DISCARD PILE HAS THE CIRCLE */}
+        <div
+          className="
+            relative
+            w-32 h-32
+            sm:w-40 sm:h-40
+            rounded-full
+            border-4
+            border-[#14592b]
+            bg-[#1c7b3f]
+            shadow-inner
+            flex
+            items-center
+            justify-center
+          "
+        >
+
+          {topCard ? (
+            <UnoCard
+              card={
+                topCard.color === "Black"
+                  ? {
+                      ...topCard,
+                      color: activeColor || "Black",
+                    }
+                  : topCard
               }
-            `}
-          >
-            {currentColor}
-          </div>
-        )}
+              disabled
+              className="w-16 h-24 sm:w-20 sm:h-32"
+            />
+          ) : (
+            <div
+              className="
+                w-16 h-24
+                sm:w-20 sm:h-32
+                rounded-xl
+                border-2
+                border-dashed
+                border-white/60
+              "
+            />
+          )}
+
+        </div>
+
+        {/* Active colour BELOW circle */}
+        <p
+          className={`
+            mt-2
+            text-sm
+            sm:text-base
+            font-bold
+            whitespace-nowrap
+            ${
+              activeColor === "Red"
+                ? "text-red-500"
+                : activeColor === "Blue"
+                ? "text-blue-500"
+                : activeColor === "Green"
+                ? "text-green-400"
+                : activeColor === "Yellow"
+                ? "text-yellow-300"
+                : "text-white"
+            }
+          `}
+        >
+          {activeColor
+            ? `Active Colour: ${activeColor}`
+            : ""}
+        </p>
+
       </div>
+
     </div>
   );
 }
