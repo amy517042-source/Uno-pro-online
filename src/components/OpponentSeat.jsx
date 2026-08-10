@@ -7,145 +7,127 @@ export default function OpponentSeat({
   cardCount,
   isCurrentTurn,
 }) {
-
   /*
-   * Position opponents around the center.
+   * Position players around the CENTER CIRCLE.
    *
-   * The center area is reserved for:
-   * DRAW + DISCARD PILE
+   * The center of the screen is reserved for:
+   *     Draw pile + Discard pile
+   *
+   * Opponents stay outside that area.
    */
 
-  const getPosition = () => {
-
+  const getSeat = () => {
     // -------------------------
     // 1 OPPONENT
     // -------------------------
-
     if (totalPlayers === 1) {
       return {
         left: "50%",
         top: "12%",
-        rotation: 0,
-        direction: "horizontal",
+        rotate: 0,
       };
     }
-
 
     // -------------------------
     // 2 OPPONENTS
     // -------------------------
-
     if (totalPlayers === 2) {
-
       return index === 0
         ? {
-            left: "12%",
-            top: "50%",
-            rotation: 90,
-            direction: "vertical",
+            left: "13%",
+            top: "42%",
+            rotate: -90,
           }
         : {
-            left: "88%",
-            top: "50%",
-            rotation: -90,
-            direction: "vertical",
+            left: "87%",
+            top: "42%",
+            rotate: 90,
           };
     }
-
 
     // -------------------------
     // 3 OPPONENTS
     // -------------------------
-
     if (totalPlayers === 3) {
-
       const seats = [
         {
-          left: "12%",
-          top: "50%",
-          rotation: 90,
-          direction: "vertical",
+          left: "14%",
+          top: "40%",
+          rotate: -90,
         },
-
         {
           left: "50%",
-          top: "12%",
-          rotation: 0,
-          direction: "horizontal",
+          top: "10%",
+          rotate: 0,
         },
-
         {
-          left: "88%",
-          top: "50%",
-          rotation: -90,
-          direction: "vertical",
+          left: "86%",
+          top: "40%",
+          rotate: 90,
         },
       ];
 
       return seats[index];
     }
 
+    // -------------------------
+    // 4–10 OPPONENTS
+    // -------------------------
+    //
+    // Spread players around the
+    // upper 240° arc.
+    //
 
-    // -------------------------
-    // 4–9 OPPONENTS
-    // -------------------------
+    const startAngle = -150;
+    const endAngle = -30;
 
     const angle =
-      Math.PI -
-      (Math.PI * index) /
+      startAngle +
+      ((endAngle - startAngle) * index) /
         (totalPlayers - 1);
 
-    const radiusX = 40;
-    const radiusY = 38;
+    const radians = angle * (Math.PI / 180);
+
+    /*
+     * Keep players far enough away
+     * from the center circle.
+     */
+    const radiusX = 43;
+    const radiusY = 40;
 
     const x =
-      50 + Math.cos(angle) * radiusX;
+      50 + Math.cos(radians) * radiusX;
 
     const y =
-      42 - Math.sin(angle) * radiusY;
+      50 + Math.sin(radians) * radiusY;
 
+    let rotate = 0;
 
-    let rotation = 0;
-    let direction = "horizontal";
-
-
-    // LEFT SIDE
-
-    if (x < 30) {
-      rotation = 90;
-      direction = "vertical";
+    // Left side
+    if (x < 35) {
+      rotate = -90;
     }
 
-
-    // RIGHT SIDE
-
-    if (x > 70) {
-      rotation = -90;
-      direction = "vertical";
+    // Right side
+    else if (x > 65) {
+      rotate = 90;
     }
-
 
     return {
       left: `${x}%`,
       top: `${y}%`,
-      rotation,
-      direction,
+      rotate,
     };
   };
 
-
-  const seat = getPosition();
-
+  const seat = getSeat();
 
   /*
-   * Don't show all opponent cards.
-   *
-   * We only display up to 7 card backs
-   * to keep the interface clean.
+   * Don't render all 20+ card backs.
+   * Five gives enough visual information
+   * while keeping the UI clean.
    */
-
-  const visibleCards = Math.min(cardCount, 7);
-
+  const visibleCards = Math.min(cardCount, 5);
 
   return (
     <div
@@ -160,25 +142,21 @@ export default function OpponentSeat({
       style={{
         left: seat.left,
         top: seat.top,
-        transform:
-          "translate(-50%, -50%)",
+        transform: "translate(-50%, -50%)",
       }}
     >
-
       {/* PLAYER NAME */}
-
       <div
         className={`
           whitespace-nowrap
-          px-2
+          mb-2
+          px-3
           py-1
           rounded-full
           text-xs
           sm:text-sm
           font-bold
           shadow-lg
-          mb-1
-
           ${
             isCurrentTurn
               ? "bg-yellow-400 text-black ring-2 ring-white"
@@ -189,75 +167,49 @@ export default function OpponentSeat({
         {player.name} ({cardCount})
       </div>
 
-
-      {/* OPPONENT CARD AREA */}
-
+      {/* OPPONENT CARDS */}
       <div
-        className={`
+        className="
           relative
-
-          ${
-            seat.direction === "vertical"
-              ? "w-14 h-20"
-              : "w-24 h-14"
-          }
-        `}
+          w-24
+          h-16
+          sm:w-28
+          sm:h-20
+        "
       >
-
         {Array.from({
           length: visibleCards,
         }).map((_, i) => {
-
           const middle =
             (visibleCards - 1) / 2;
 
-          const offset =
-            i - middle;
-
+          const offset = i - middle;
 
           return (
             <div
               key={i}
-              className="
-                absolute
-                left-1/2
-                top-1/2
-              "
+              className="absolute left-1/2 top-1/2"
               style={{
-                transform:
-                  seat.direction === "vertical"
-                    ? `
-                      translate(-50%, -50%)
-                      translateY(${offset * 4}px)
-                      rotate(${seat.rotation}deg)
-                    `
-                    : `
-                      translate(-50%, -50%)
-                      translateX(${offset * 7}px)
-                      rotate(${offset * 3}deg)
-                    `,
-
+                transform: `
+                  translate(-50%, -50%)
+                  translateX(${offset * 8}px)
+                  rotate(${offset * 5}deg)
+                `,
                 zIndex: i,
               }}
             >
-
               <CardBack
-                className={
-                  totalPlayers >= 8
-                    ? "!w-7 !h-11"
-                    : totalPlayers >= 6
-                    ? "!w-8 !h-12"
-                    : "!w-9 !h-14"
-                }
+                className="
+                  !w-9
+                  !h-14
+                  sm:!w-10
+                  sm:!h-16
+                "
               />
-
             </div>
           );
-
         })}
-
       </div>
-
     </div>
   );
 }
