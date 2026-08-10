@@ -245,28 +245,7 @@ async function handleColorSelect(color) {
   return (
   <GameTable>
 
-      {/* CENTER AREA */}
-<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-
-  {/* Small circle ONLY for discard pile */}
-  <div
-    className="
-      absolute
-      left-1/2
-      top-1/2
-      -translate-x-1/2
-      -translate-y-1/2
-      w-40
-      h-40
-      sm:w-48
-      sm:h-48
-      rounded-full
-      border-4
-      border-[#14592b]
-      bg-[#1c7b3f]
-      shadow-inner
-    "
-  />
+      
 
   {/* Center piles */}
   <CenterPile
@@ -300,7 +279,7 @@ async function handleColorSelect(color) {
       </div>
 
       {/* Your Cards */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full">
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full z-30">
          <PlayerHand
           cards={myCards}
           canPlay={isMyTurn}
