@@ -246,16 +246,44 @@ async function handleColorSelect(color) {
   <GameTable>
 
       
-
-  {/* Center piles */}
-  <CenterPile
-    topCard={topCard}
-    currentColor={room.currentColor || topCard?.color || ""}
-    deckCount={deckCount}
-    canDraw={isMyTurn}
-    onDraw={handleDrawCard}
-  />
-
+{/* CENTER AREA */}
+<div
+  className="
+    absolute
+    left-1/2
+    top-1/2
+    -translate-x-1/2
+    -translate-y-1/2
+    z-10
+  "
+>
+  {/* ONE CIRCLE FOR BOTH DRAW + DISCARD */}
+  <div
+    className="
+      relative
+      w-64
+      h-64
+      sm:w-72
+      sm:h-72
+      rounded-full
+      border-4
+      border-[#14592b]
+      bg-[#1c7b3f]/80
+      shadow-inner
+      flex
+      items-center
+      justify-center
+    "
+  >
+    {/* Draw + Discard */}
+    <CenterPile
+      topCard={topCard}
+      currentColor={room.currentColor || topCard?.color || ""}
+      deckCount={deckCount}
+      canDraw={isMyTurn}
+      onDraw={handleDrawCard}
+    />
+  </div>
 </div>
 
       {opponents.map((player, index) => (
