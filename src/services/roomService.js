@@ -6,6 +6,7 @@ import {
   arrayUnion,
   onSnapshot,
   serverTimestamp,
+  deleteDoc,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -480,5 +481,150 @@ export async function keepDrawnCard(
   await updateDoc(roomRef, {
     drawnCard: null,
     currentPlayer: getNextPlayer(room),
+  });
+}
+
+export async function leaveRoom(roomCode, playerUid) {
+  const roomRef = doc(db, "rooms", roomCode);
+
+  const snapshot = await getDoc(roomRef);
+
+  if (!snapshot.exists()) {
+    // Room already gone — that's okay.
+    return;
+  }
+
+  const room = snapshot.data();
+
+  const leavingPlayer = room.players?.find(
+    (player) => player.uid === playerUid
+  );
+
+  if (!leavingPlayer) {
+    return;
+  }
+
+  // --------------------------------
+  // REMOVE PLAYER
+  // --------------------------------
+
+  const remainingPlayers = room.players.filter(
+    (player) => player.uid !== playerUid
+  );
+
+  // --------------------------------
+  // IF LAST PLAYER LEAVES
+  // --------------------------------
+
+  if (remainingPlayers.length === 0) {
+    await deleteDoc(roomRef);
+    return;
+  }
+
+  // --------------------------------
+  // REMOVE PLAYER'S HAND
+  // --------------------------------
+
+  const hands = {
+    ...(room.hands || {}),
+  };
+
+  delete hands[playerUid];
+
+  // --------------------------------
+  // FIND NEW HOST
+  // --------------------------------
+
+  let newHost = remainingPlayers.find(
+    (player) => player.isHost
+  );
+
+  // If old host left, choose first remaining player.
+  if (!newHost) {
+    newHost = remainingPlayers[0];
+  }
+
+  const updatedPlayers = remainingPlayers.map(
+    (player) => ({
+      ...player,
+      isHost: player.uid === newHost.uid,
+    })
+  );
+
+  // --------------------------------
+  // UPDATE HOST INFORMATION
+  // --------------------------------
+
+  const newHostId = newHost.uid;
+  const newHostName = newHost.name;
+
+  // --------------------------------
+  // DETERMINE NEXT PLAYER
+  // --------------------------------
+
+  let nextPlayer = room.currentPlayer;
+
+  if (
+    room.currentPlayer === playerUid
+  ) {
+    /*
+     * The current player is leaving.
+     * Select the next remaining player
+     * according to the current direction.
+     */
+
+    const leavingIndex =
+      room.players.findIndex(
+        (player) =>
+          player.uid === playerUid
+      );
+
+    if (leavingIndex !== -1) {
+      let nextIndex;
+
+      if (room.direction === 1) {
+        nextIndex =
+          leavingIndex %
+          remainingPlayers.length;
+      } else {
+        nextIndex =
+          (leavingIndex - 1) %
+          remainingPlayers.length;
+
+        if (nextIndex < 0) {
+          nextIndex =
+            remainingPlayers.length - 1;
+        }
+      }
+
+      nextPlayer =
+        remainingPlayers[nextIndex]?.uid ||
+        remainingPlayers[0].uid;
+    } else {
+      nextPlayer =
+        remainingPlayers[0].uid;
+    }
+  }
+
+  // --------------------------------
+  // IF ONLY ONE PLAYER REMAINS
+  // --------------------------------
+
+  const newStatus =
+    remainingPlayers.length < 2
+      ? "waiting"
+      : room.status;
+
+  // --------------------------------
+  // UPDATE ROOM
+  // --------------------------------
+
+  await updateDoc(roomRef, {
+    players: updatedPlayers,
+    hands,
+    hostId: newHostId,
+    hostName: newHostName,
+    currentPlayer: nextPlayer,
+    status: newStatus,
   });
 }
