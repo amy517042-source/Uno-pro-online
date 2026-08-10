@@ -4,8 +4,9 @@ import { auth } from "../firebase/firebase";
 import {
   listenToRoom,
   playCard,
- drawCard,
+  drawCard,
   keepDrawnCard,
+  leaveRoom,
 } from "../services/roomService";
 import DrawCardPopup from "../components/DrawCardPopup";
 import PlayerHand from "../components/PlayerHand";
@@ -242,6 +243,40 @@ async function handleColorSelect(color) {
       </div>
     );
   }
+async function handleLeaveGame() {
+  const confirmed = window.confirm(
+    "Are you sure you want to leave this game?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await leaveRoom(
+      roomCode,
+      currentUser.uid
+    );
+
+    localStorage.removeItem(
+      "unoRoomCode"
+    );
+
+    localStorage.removeItem(
+      "unoPlayerName"
+    );
+
+    window.location.reload();
+  } catch (error) {
+    console.error(
+      "Leave game error:",
+      error
+    );
+
+    alert(
+      error.message ||
+        "Unable to leave the game."
+    );
+  }
+}
   return (
   <GameTable>
 
