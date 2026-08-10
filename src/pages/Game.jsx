@@ -305,6 +305,39 @@ async function handleColorSelect(color) {
       <div className="absolute top-2 left-2 bg-black/60 text-white px-4 py-2 rounded-lg font-bold">
         {isMyTurn ? "🟢 Your Turn" : "⏳ Waiting..."}
       </div>
+{/* Leave Game Button */}
+<button
+  onClick={() => {
+    const confirmLeave = window.confirm(
+      "Are you sure you want to leave this game?"
+    );
+
+    if (!confirmLeave) return;
+
+    localStorage.removeItem("unoRoomCode");
+    localStorage.removeItem("unoPlayerName");
+
+    window.location.reload();
+  }}
+  className="
+    absolute
+    top-2
+    right-2
+    z-50
+    px-4
+    py-2
+    rounded-xl
+    bg-red-600
+    hover:bg-red-700
+    active:scale-95
+    text-white
+    font-bold
+    shadow-lg
+    transition-all
+  "
+>
+  🚪 Leave
+</button>
 
       {/* Your Cards */}
       <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full z-30">
