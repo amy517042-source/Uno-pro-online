@@ -123,6 +123,8 @@ export function listenToRoom(roomCode, callback) {
   return onSnapshot(roomRef, (snapshot) => {
     if (snapshot.exists()) {
       callback(snapshot.data());
+    } else {
+      callback(null);
     }
   });
 }
