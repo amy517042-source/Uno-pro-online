@@ -490,17 +490,16 @@ export async function leaveRoom(roomCode, playerUid) {
   const snapshot = await getDoc(roomRef);
 
   if (!snapshot.exists()) {
-    // Room already gone — that's okay.
     return;
   }
 
   const room = snapshot.data();
 
-  const leavingPlayer = room.players?.find(
+  const leavingIndex = room.players.findIndex(
     (player) => player.uid === playerUid
   );
 
-  if (!leavingPlayer) {
+  if (leavingIndex === -1) {
     return;
   }
 
@@ -539,7 +538,6 @@ export async function leaveRoom(roomCode, playerUid) {
     (player) => player.isHost
   );
 
-  // If old host left, choose first remaining player.
   if (!newHost) {
     newHost = remainingPlayers[0];
   }
@@ -552,68 +550,76 @@ export async function leaveRoom(roomCode, playerUid) {
   );
 
   // --------------------------------
-  // UPDATE HOST INFORMATION
-  // --------------------------------
-
-  const newHostId = newHost.uid;
-  const newHostName = newHost.name;
-
-  // --------------------------------
   // DETERMINE NEXT PLAYER
   // --------------------------------
 
   let nextPlayer = room.currentPlayer;
 
-  if (
-    room.currentPlayer === playerUid
-  ) {
+  if (room.currentPlayer === playerUid) {
     /*
-     * The current player is leaving.
-     * Select the next remaining player
-     * according to the current direction.
+     * The player whose turn it was has left.
+     *
+     * We search through the ORIGINAL player list
+     * until we find the next player who is still
+     * inside the room.
      */
 
-    const leavingIndex =
-      room.players.findIndex(
-        (player) =>
-          player.uid === playerUid
-      );
+    const totalPlayers = room.players.length;
+    const direction = room.direction || 1;
 
-    if (leavingIndex !== -1) {
-      let nextIndex;
+    for (let step = 1; step <= totalPlayers; step++) {
+      const nextIndex =
+        (leavingIndex +
+          step * direction +
+          totalPlayers) %
+        totalPlayers;
 
-      if (room.direction === 1) {
-        nextIndex =
-          leavingIndex %
-          remainingPlayers.length;
-      } else {
-        nextIndex =
-          (leavingIndex - 1) %
-          remainingPlayers.length;
+      const candidate =
+        room.players[nextIndex];
 
-        if (nextIndex < 0) {
-          nextIndex =
-            remainingPlayers.length - 1;
+      if (
+        candidate &&
+        candidate.uid !== playerUid
+      ) {
+        const stillInRoom =
+          remainingPlayers.some(
+            (player) =>
+              player.uid === candidate.uid
+          );
+
+        if (stillInRoom) {
+          nextPlayer = candidate.uid;
+          break;
         }
       }
-
-      nextPlayer =
-        remainingPlayers[nextIndex]?.uid ||
-        remainingPlayers[0].uid;
-    } else {
-      nextPlayer =
-        remainingPlayers[0].uid;
     }
   }
 
   // --------------------------------
-  // IF ONLY ONE PLAYER REMAINS
+  // GAME WAS IN PROGRESS
   // --------------------------------
 
-  const newStatus =
-    remainingPlayers.length < 2
-      ? "waiting"
-      : room.status;
+  let newStatus = room.status;
+  let winner = room.winner || null;
+
+  if (room.status === "playing") {
+
+    // If only one player remains,
+    // that player wins.
+    if (remainingPlayers.length === 1) {
+      winner = remainingPlayers[0].uid;
+      nextPlayer = null;
+      newStatus = "finished";
+    }
+  }
+
+  // --------------------------------
+  // GAME WAS STILL IN LOBBY
+  // --------------------------------
+
+  if (room.status === "waiting") {
+    newStatus = "waiting";
+  }
 
   // --------------------------------
   // UPDATE ROOM
@@ -622,9 +628,10 @@ export async function leaveRoom(roomCode, playerUid) {
   await updateDoc(roomRef, {
     players: updatedPlayers,
     hands,
-    hostId: newHostId,
-    hostName: newHostName,
+    hostId: newHost.uid,
+    hostName: newHost.name,
     currentPlayer: nextPlayer,
+    winner,
     status: newStatus,
   });
 }
