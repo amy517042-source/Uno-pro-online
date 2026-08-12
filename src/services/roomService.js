@@ -7,6 +7,7 @@ import {
   onSnapshot,
   serverTimestamp,
   deleteDoc,
+  runTransaction,
 } from "firebase/firestore";
 
 import { db } from "../firebase/firebase";
@@ -487,151 +488,138 @@ export async function keepDrawnCard(
 export async function leaveRoom(roomCode, playerUid) {
   const roomRef = doc(db, "rooms", roomCode);
 
-  const snapshot = await getDoc(roomRef);
+  await runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(roomRef);
 
-  if (!snapshot.exists()) {
-    return;
-  }
+    if (!snapshot.exists()) {
+      return;
+    }
 
-  const room = snapshot.data();
+    const room = snapshot.data();
 
-  const leavingIndex = room.players.findIndex(
-    (player) => player.uid === playerUid
-  );
+    const players = room.players || [];
 
-  if (leavingIndex === -1) {
-    return;
-  }
+    const leavingPlayer = players.find(
+      (player) => player.uid === playerUid
+    );
 
-  // --------------------------------
-  // REMOVE PLAYER
-  // --------------------------------
+    if (!leavingPlayer) {
+      return;
+    }
 
-  const remainingPlayers = room.players.filter(
-    (player) => player.uid !== playerUid
-  );
+    // Remove the player
+    const remainingPlayers = players.filter(
+      (player) => player.uid !== playerUid
+    );
 
-  // --------------------------------
-  // IF LAST PLAYER LEAVES
-  // --------------------------------
+    // --------------------------------
+    // LAST PLAYER
+    // --------------------------------
 
-  if (remainingPlayers.length === 0) {
-    await deleteDoc(roomRef);
-    return;
-  }
+    if (remainingPlayers.length === 0) {
+      transaction.delete(roomRef);
+      return;
+    }
 
-  // --------------------------------
-  // REMOVE PLAYER'S HAND
-  // --------------------------------
+    // --------------------------------
+    // REMOVE PLAYER'S HAND
+    // --------------------------------
 
-  const hands = {
-    ...(room.hands || {}),
-  };
+    const hands = {
+      ...(room.hands || {}),
+    };
 
-  delete hands[playerUid];
+    delete hands[playerUid];
 
-  // --------------------------------
-  // FIND NEW HOST
-  // --------------------------------
+    // --------------------------------
+    // FIND NEW HOST
+    // --------------------------------
 
-  let newHost = remainingPlayers.find(
-    (player) => player.isHost
-  );
+    let newHost = remainingPlayers.find(
+      (player) => player.isHost
+    );
 
-  if (!newHost) {
-    newHost = remainingPlayers[0];
-  }
+    if (!newHost) {
+      newHost = remainingPlayers[0];
+    }
 
-  const updatedPlayers = remainingPlayers.map(
-    (player) => ({
-      ...player,
-      isHost: player.uid === newHost.uid,
-    })
-  );
+    const updatedPlayers = remainingPlayers.map(
+      (player) => ({
+        ...player,
+        isHost:
+          player.uid === newHost.uid,
+      })
+    );
 
-  // --------------------------------
-  // DETERMINE NEXT PLAYER
-  // --------------------------------
+    // --------------------------------
+    // FIND NEXT PLAYER
+    // --------------------------------
 
-  let nextPlayer = room.currentPlayer;
+    let nextPlayer = room.currentPlayer;
 
-  if (room.currentPlayer === playerUid) {
-    /*
-     * The player whose turn it was has left.
-     *
-     * We search through the ORIGINAL player list
-     * until we find the next player who is still
-     * inside the room.
-     */
+    if (room.currentPlayer === playerUid) {
+      const leavingIndex = players.findIndex(
+        (player) => player.uid === playerUid
+      );
 
-    const totalPlayers = room.players.length;
-    const direction = room.direction || 1;
+      const direction = room.direction || 1;
+      const totalPlayers = players.length;
 
-    for (let step = 1; step <= totalPlayers; step++) {
-      const nextIndex =
-        (leavingIndex +
-          step * direction +
-          totalPlayers) %
-        totalPlayers;
+      for (let step = 1; step <= totalPlayers; step++) {
+        const nextIndex =
+          (leavingIndex +
+            step * direction +
+            totalPlayers) %
+          totalPlayers;
 
-      const candidate =
-        room.players[nextIndex];
+        const candidate = players[nextIndex];
 
-      if (
-        candidate &&
-        candidate.uid !== playerUid
-      ) {
-        const stillInRoom =
+        if (!candidate) continue;
+
+        const stillExists =
           remainingPlayers.some(
             (player) =>
               player.uid === candidate.uid
           );
 
-        if (stillInRoom) {
+        if (stillExists) {
           nextPlayer = candidate.uid;
           break;
         }
       }
     }
-  }
 
-  // --------------------------------
-  // GAME WAS IN PROGRESS
-  // --------------------------------
+    // --------------------------------
+    // GAME STATUS
+    // --------------------------------
 
-  let newStatus = room.status;
-  let winner = room.winner || null;
+    let status = room.status;
+    let winner = room.winner || null;
 
-  if (room.status === "playing") {
-
-    // If only one player remains,
-    // that player wins.
-    if (remainingPlayers.length === 1) {
+    if (
+      room.status === "playing" &&
+      remainingPlayers.length === 1
+    ) {
       winner = remainingPlayers[0].uid;
       nextPlayer = null;
-      newStatus = "finished";
+      status = "finished";
     }
-  }
 
-  // --------------------------------
-  // GAME WAS STILL IN LOBBY
-  // --------------------------------
+    // --------------------------------
+    // WRITE NEW ROOM STATE
+    // --------------------------------
 
-  if (room.status === "waiting") {
-    newStatus = "waiting";
-  }
+    transaction.update(roomRef, {
+      players: updatedPlayers,
+      hands,
 
-  // --------------------------------
-  // UPDATE ROOM
-  // --------------------------------
+      hostId: newHost.uid,
+      hostName: newHost.name,
 
-  await updateDoc(roomRef, {
-    players: updatedPlayers,
-    hands,
-    hostId: newHost.uid,
-    hostName: newHost.name,
-    currentPlayer: nextPlayer,
-    winner,
-    status: newStatus,
+      currentPlayer: nextPlayer,
+
+      winner,
+      status,
+    });
   });
 }
