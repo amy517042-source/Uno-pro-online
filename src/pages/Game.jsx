@@ -10,7 +10,6 @@ import {
 } from "../services/roomService";
 import DrawCardPopup from "../components/DrawCardPopup";
 import PlayerHand from "../components/PlayerHand";
-import OpponentHand from "../components/OpponentHand";
 import CenterPile from "../components/CenterPile";
 import ColorPicker from "../components/ColorPicker";
 import GameTable from "../components/GameTable";
@@ -47,6 +46,7 @@ const [pendingCard, setPendingCard] = useState(null);
 useEffect(() => {
   if (
     room?.drawnCard &&
+    currentUser &&
     room.currentPlayer === currentUser.uid
   ) {
     setDrawnCard(room.drawnCard);
@@ -88,11 +88,11 @@ if (!currentUser) {
   const isMyTurn =
     room.currentPlayer === currentUser.uid;
 
-  const opponents =
-    room.players.filter(
-      (player) =>
-        player.uid !== currentUser.uid
-    );
+ const opponents =
+  room.players?.filter(
+    (player) =>
+      player.uid !== currentUser.uid
+  ) || [];
      
   async function handlePlayCard(index) {
   
@@ -207,12 +207,17 @@ async function handleColorSelect(color) {
     alert(error.message);
   }
 }
+
 async function handleLeaveGame() {
   const confirmed = window.confirm(
-    "Are you sure you want to leave this game?"
+    "Are you sure you want to leave the game?"
   );
 
   if (!confirmed) return;
+
+  console.log("LEAVE BUTTON CLICKED");
+  console.log("Room:", roomCode);
+  console.log("Player:", currentUser?.uid);
 
   try {
     await leaveRoom(
@@ -220,16 +225,19 @@ async function handleLeaveGame() {
       currentUser.uid
     );
 
+    console.log("LEAVE ROOM SUCCESS");
+
     localStorage.removeItem("unoRoomCode");
     localStorage.removeItem("unoPlayerName");
 
     window.location.reload();
+
   } catch (error) {
-    console.error("Leave game error:", error);
+    console.error("LEAVE ROOM ERROR:", error);
 
     alert(
-      error.message ||
-      "Unable to leave the game."
+      "Unable to leave the game:\n" +
+      error.message
     );
   }
 }
@@ -269,40 +277,7 @@ async function handleLeaveGame() {
       </div>
     );
   }
-async function handleLeaveGame() {
-  const confirmed = window.confirm(
-    "Are you sure you want to leave this game?"
-  );
 
-  if (!confirmed) return;
-
-  try {
-    await leaveRoom(
-      roomCode,
-      currentUser.uid
-    );
-
-    localStorage.removeItem(
-      "unoRoomCode"
-    );
-
-    localStorage.removeItem(
-      "unoPlayerName"
-    );
-
-    window.location.reload();
-  } catch (error) {
-    console.error(
-      "Leave game error:",
-      error
-    );
-
-    alert(
-      error.message ||
-        "Unable to leave the game."
-    );
-  }
-}
   return (
   <GameTable>
 
@@ -366,20 +341,10 @@ async function handleLeaveGame() {
       <div className="absolute top-2 left-2 bg-black/60 text-white px-4 py-2 rounded-lg font-bold">
         {isMyTurn ? "🟢 Your Turn" : "⏳ Waiting..."}
       </div>
+
 {/* Leave Game Button */}
 <button
-  onClick={() => {
-    const confirmLeave = window.confirm(
-      "Are you sure you want to leave this game?"
-    );
-
-    if (!confirmLeave) return;
-
-    localStorage.removeItem("unoRoomCode");
-    localStorage.removeItem("unoPlayerName");
-
-    window.location.reload();
-  }}
+  onClick={handleLeaveGame}
   className="
     absolute
     top-2
