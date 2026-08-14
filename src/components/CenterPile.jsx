@@ -31,52 +31,33 @@ export default function CenterPile({
       {/* ================= DISCARD PILE ================= */}
       <div className="flex flex-col items-center">
 
-        {/* ONLY DISCARD PILE HAS THE CIRCLE */}
-        <div
-          className="
-            relative
-            w-32 h-32
-            sm:w-40 sm:h-40
-            rounded-full
-            border-4
-            border-[#14592b]
-            bg-[#1c7b3f]
-            shadow-inner
-            flex
-            items-center
-            justify-center
-          "
-        >
+        {/* NO CIRCLE HERE */}
+        {topCard ? (
+          <UnoCard
+            card={
+              topCard.color === "Black"
+                ? {
+                    ...topCard,
+                    color: activeColor || "Black",
+                  }
+                : topCard
+            }
+            disabled
+          />
+        ) : (
+          <div
+            className="
+              w-16 h-24
+              sm:w-20 sm:h-32
+              rounded-xl
+              border-2
+              border-dashed
+              border-white/60
+            "
+          />
+        )}
 
-          {topCard ? (
-            <UnoCard
-              card={
-                topCard.color === "Black"
-                  ? {
-                      ...topCard,
-                      color: activeColor || "Black",
-                    }
-                  : topCard
-              }
-              disabled
-              className="w-16 h-24 sm:w-20 sm:h-32"
-            />
-          ) : (
-            <div
-              className="
-                w-16 h-24
-                sm:w-20 sm:h-32
-                rounded-xl
-                border-2
-                border-dashed
-                border-white/60
-              "
-            />
-          )}
-
-        </div>
-
-        {/* Active colour BELOW circle */}
+        {/* Active Colour */}
         <p
           className={`
             mt-2
