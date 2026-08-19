@@ -487,6 +487,29 @@ export async function keepDrawnCard(
   });
 }
 
+
+export async function callUno(roomCode, playerUid) {
+  const roomRef = doc(db, "rooms", roomCode);
+
+  const snapshot = await getDoc(roomRef);
+
+  if (!snapshot.exists()) {
+    throw new Error("Room not found.");
+  }
+
+  const room = snapshot.data();
+
+  const playerHand = room.hands?.[playerUid] || [];
+
+  if (playerHand.length !== 1) {
+    throw new Error("You can only call UNO with one card.");
+  }
+
+  await updateDoc(roomRef, {
+    unoCalledBy: playerUid,
+  });
+}
+
 export async function leaveRoom(roomCode, playerUid) {
   const roomRef = doc(db, "rooms", roomCode);
 
