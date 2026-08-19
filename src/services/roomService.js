@@ -169,6 +169,8 @@ export async function startGame(roomCode) {
     currentPlayer: room.players[0].uid,
     direction: 1,
     winner: null,
+unoRequiredBy: null,
+unoCalledBy: null,
     gameStartedAt: serverTimestamp(),
   });
 }
