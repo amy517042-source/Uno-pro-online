@@ -26,6 +26,7 @@ const [drawnCard, setDrawnCard] = useState(null);
 const [colorPickerOpen, setColorPickerOpen] = useState(false);
 const [pendingCard, setPendingCard] = useState(null);
   const currentUser = auth.currentUser;
+const [unoCalled, setUnoCalled] = useState(false);
 
 
 
@@ -361,15 +362,65 @@ async function handleLeaveGame() {
 </button>
 
       {/* Your Cards */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full z-30">
-         <PlayerHand
-          cards={myCards}
-          canPlay={isMyTurn}
-          onCardClick={handlePlayCard}
-        />
-        
+<div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full z-30">
 
-      </div>
+  {/* UNO BUTTON */}
+  {myCards.length === 1 && !unoCalled && (
+    <button
+      onClick={() => setUnoCalled(true)}
+      className="
+        absolute
+        left-1/2
+        -translate-x-1/2
+        -top-16
+        px-8
+        py-3
+        rounded-full
+        bg-red-600
+        hover:bg-red-700
+        active:scale-95
+        text-white
+        text-xl
+        font-black
+        shadow-xl
+        border-4
+        border-white
+        transition-all
+      "
+    >
+      UNO!
+    </button>
+  )}
+
+  {/* UNO CALLED MESSAGE */}
+  {myCards.length === 1 && unoCalled && (
+    <div
+      className="
+        absolute
+        left-1/2
+        -translate-x-1/2
+        -top-14
+        px-5
+        py-2
+        rounded-full
+        bg-green-600
+        text-white
+        font-bold
+        shadow-lg
+        whitespace-nowrap
+      "
+    >
+      ✅ UNO Called!
+    </div>
+  )}
+
+  <PlayerHand
+    cards={myCards}
+    canPlay={isMyTurn}
+    onCardClick={handlePlayCard}
+  />
+
+</div>
 <ColorPicker
   open={colorPickerOpen}
   onSelect={handleColorSelect}
