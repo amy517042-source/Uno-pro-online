@@ -7,6 +7,7 @@ import {
   drawCard,
   keepDrawnCard,
   leaveRoom,
+  callUno,
 } from "../services/roomService";
 import DrawCardPopup from "../components/DrawCardPopup";
 import PlayerHand from "../components/PlayerHand";
@@ -369,7 +370,18 @@ async function handleLeaveGame() {
   {/* UNO BUTTON */}
   {myCards.length === 1 && !unoCalled && (
     <button
-      onClick={() => setUnoCalled(true)}
+      onClick={async () => {
+  try {
+    await callUno(
+      roomCode,
+      currentUser.uid
+    );
+
+    setUnoCalled(true);
+  } catch (error) {
+    alert(error.message);
+  }
+}}
       className="
         absolute
         left-1/2
