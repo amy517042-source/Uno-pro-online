@@ -47,14 +47,16 @@ const [unoCalled, setUnoCalled] = useState(false);
 useEffect(() => {
   if (
     room?.drawnCard &&
-    currentUser &&
     room.currentPlayer === currentUser.uid
   ) {
     setDrawnCard(room.drawnCard);
   } else {
     setDrawnCard(null);
   }
-}, [room, currentUser?.uid]);
+
+  // Reset UNO button for every new turn
+  setUnoCalled(false);
+}, [room?.currentPlayer, room?.drawnCard, currentUser?.uid]);
 
 if (!currentUser) {
   return (
