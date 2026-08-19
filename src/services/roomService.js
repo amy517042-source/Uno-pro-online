@@ -77,6 +77,8 @@ export async function createRoom(hostId, playerName, maxPlayers) {
     currentPlayer: null,
     direction: 1,
     winner: null,
+unoRequiredBy: null,
+unoCalledBy: null,
   });
 
   return roomCode;
