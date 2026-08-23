@@ -368,7 +368,9 @@ async function handleLeaveGame() {
 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full z-30">
 
   {/* UNO BUTTON */}
-  {myCards.length === 1 && !unoCalled && (
+  {myCards.length === 1 &&
+  room.unoRequiredBy === currentUser.uid &&
+  room.unoCalledBy !== currentUser.uid && (
     <button
       onClick={async () => {
   try {
@@ -377,7 +379,7 @@ async function handleLeaveGame() {
       currentUser.uid
     );
 
-    setUnoCalled(true);
+    
   } catch (error) {
     alert(error.message);
   }
