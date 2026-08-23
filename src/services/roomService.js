@@ -450,6 +450,14 @@ if (deck.length === 0) {
   if (hands[playerUid].length === 0) {
     winner = playerUid;
   }
+
+let unoRequiredBy = null;
+let unoCalledBy = null;
+
+if (hands[playerUid].length === 1) {
+  unoRequiredBy = playerUid;
+}
+
   await updateDoc(roomRef, {
   hands,
   deck,
@@ -459,6 +467,10 @@ if (deck.length === 0) {
   currentColor,
   winner,
   drawnCard: null,
+
+unoRequiredBy,
+unoCalledBy,
+
   status: winner ? "finished" : "playing",
 });
 
