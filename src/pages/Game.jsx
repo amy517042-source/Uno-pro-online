@@ -27,7 +27,7 @@ const [drawnCard, setDrawnCard] = useState(null);
 const [colorPickerOpen, setColorPickerOpen] = useState(false);
 const [pendingCard, setPendingCard] = useState(null);
   const currentUser = auth.currentUser;
-const [unoCalled, setUnoCalled] = useState(false);
+
 
 
 
@@ -56,7 +56,7 @@ useEffect(() => {
   }
 
   // Reset UNO button for every new turn
-  setUnoCalled(false);
+  
 }, [room?.currentPlayer, room?.drawnCard, currentUser?.uid]);
 
 if (!currentUser) {
@@ -368,22 +368,20 @@ async function handleLeaveGame() {
 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-full z-30">
 
   {/* UNO BUTTON */}
-  {myCards.length === 1 &&
+{myCards.length === 1 &&
   room.unoRequiredBy === currentUser.uid &&
   room.unoCalledBy !== currentUser.uid && (
     <button
       onClick={async () => {
-  try {
-    await callUno(
-      roomCode,
-      currentUser.uid
-    );
-
-    
-  } catch (error) {
-    alert(error.message);
-  }
-}}
+        try {
+          await callUno(
+            roomCode,
+            currentUser.uid
+          );
+        } catch (error) {
+          alert(error.message);
+        }
+      }}
       className="
         absolute
         left-1/2
@@ -408,8 +406,8 @@ async function handleLeaveGame() {
     </button>
   )}
 
-  {/* UNO CALLED MESSAGE */}
-  {myCards.length === 1 && unoCalled && (
+{myCards.length === 1 &&
+  room.unoCalledBy === currentUser.uid && (
     <div
       className="
         absolute
