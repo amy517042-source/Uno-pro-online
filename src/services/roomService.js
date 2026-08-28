@@ -497,10 +497,13 @@ export async function keepDrawnCard(
     throw new Error("Not your turn.");
   }
 
-  await updateDoc(roomRef, {
-    drawnCard: null,
-    currentPlayer: getNextPlayer(room),
-  });
+  const updatedRoom = applyUnoPenalty(room);
+
+await updateDoc(roomRef, {
+  ...updatedRoom,
+  drawnCard: null,
+  currentPlayer: getNextPlayer(updatedRoom),
+});
 }
 
 
@@ -524,6 +527,44 @@ export async function callUno(roomCode, playerUid) {
   await updateDoc(roomRef, {
     unoCalledBy: playerUid,
   });
+}
+
+function applyUnoPenalty(room) {
+  if (
+    !room.unoRequiredBy ||
+    room.unoRequiredBy === room.unoCalledBy
+  ) {
+    return room;
+  }
+
+  let deck = [...room.deck];
+  let discardPile = [...room.discardPile];
+  const hands = { ...room.hands };
+
+  const player = room.unoRequiredBy;
+
+  for (let i = 0; i < 2; i++) {
+    const reshuffled = reshuffleDeck(
+      deck,
+      discardPile
+    );
+
+    deck = reshuffled.deck;
+    discardPile = reshuffled.discardPile;
+
+    if (deck.length === 0) break;
+
+    hands[player].push(deck.shift());
+  }
+
+  return {
+    ...room,
+    deck,
+    discardPile,
+    hands,
+    unoRequiredBy: null,
+    unoCalledBy: null,
+  };
 }
 
 export async function leaveRoom(roomCode, playerUid) {
