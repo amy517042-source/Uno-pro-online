@@ -541,7 +541,11 @@ function applyUnoPenalty(room) {
 
   let deck = [...room.deck];
   let discardPile = [...room.discardPile];
-  const hands = { ...room.hands };
+ const hands = {};
+
+for (const uid in room.hands) {
+  hands[uid] = [...room.hands[uid]];
+}
 
   const player = room.unoRequiredBy;
 
