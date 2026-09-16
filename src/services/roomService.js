@@ -202,13 +202,15 @@ export async function drawCard(roomCode, playerUid) {
     throw new Error("Room not found.");
   }
 
-  const room = snapshot.data();
+  let room = snapshot.data();
 
-  if (room.currentPlayer !== playerUid) {
-    throw new Error("Not your turn.");
-  }
+if (room.currentPlayer !== playerUid) {
+  throw new Error("Not your turn.");
+}
 
-  let deck = [...room.deck];
+room = applyUnoPenalty(room);
+
+let deck = [...room.deck];
 let discardPile = [...room.discardPile];
 
 const reshuffled = reshuffleDeck(
