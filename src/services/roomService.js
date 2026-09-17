@@ -246,9 +246,9 @@ await updateDoc(roomRef, {
   currentPlayer: playable
     ? playerUid
     : getNextPlayer(room),
-  drawnCard: playable
-    ? drawnCard
-    : null,
+  drawnCard: playable ? drawnCard : null,
+  unoRequiredBy: room.unoRequiredBy,
+  unoCalledBy: room.unoCalledBy,
 });
 }
 
