@@ -267,12 +267,12 @@ export async function playCard(
     throw new Error("Room not found.");
   }
 
-  const room = snapshot.data();
+  let room = snapshot.data();
 
   if (room.currentPlayer !== playerUid) {
     throw new Error("Not your turn.");
   }
-
+     room = applyUnoPenalty(room);
   const topCard =
     room.discardPile[
       room.discardPile.length - 1
